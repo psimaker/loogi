@@ -1,0 +1,16 @@
+{
+  "name": "LOOGI",
+  "short_name": "LOOGI",
+  "icons": [
+    {
+      "src": "/static/themes/loogi/img/loogi-mark.png",
+      "sizes": "1563x1563",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#222428",
+  "background_color": "#222428"
+}

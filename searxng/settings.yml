@@ -1,0 +1,208 @@
+# LOOGI — SearXNG settings.
+# Copied to /etc/searxng/settings.yml during container build.
+# With `use_default_settings: true` only deltas from the upstream default
+# are merged (deep merge), see ADR 0009.
+use_default_settings:
+  engines:
+    keep_only:
+      # general
+      # google deliberately NOT included — returns persistent HTTP 403 for
+      # server IPs, see ADR 0016.
+      - braveapi
+      # brave (HTML scrape) stays nominally in the list but is set to
+      # disabled: true via the engines override below (see ADR 0016).
+      # Reason: brave.images / brave.videos / brave.news reference
+      # `network: brave` — without the brave engine in the map, network
+      # init crashes with KeyError. So the engine is loaded purely as a
+      # network donor, but never queried for default searches.
+      - brave
+      - duckduckgo
+      - mojeek
+      - mwmbl
+      - startpage
+      - qwant
+      # wikipedia deliberately NOT in general — see ADR 0015. Wikipedia
+      # remains reachable via the wiki tab (wiktionary, wikibooks, ...)
+      # and through the list hits of the major engines.
+
+      # images
+      - google images
+      - brave.images
+      - duckduckgo images
+      - qwant images
+      - mojeek images
+      - startpage images
+
+      # videos
+      - youtube
+      - vimeo
+      - peertube
+      - brave.videos
+      - duckduckgo videos
+      - qwant videos
+
+      # news
+      - google news
+      - brave.news
+      - duckduckgo news
+      - qwant news
+      - bing news
+      - yahoo news
+      - mojeek news
+      - startpage news
+      - reuters
+      - wikinews
+
+      # map
+      - openstreetmap
+      - apple maps
+
+      # music
+      - bandcamp
+      - soundcloud
+
+      # it / dev
+      - github
+      - github code
+      - gitlab
+      - codeberg
+      - stackoverflow
+      - mdn
+      - hackernews
+
+      # science
+      - arxiv
+      - google scholar
+      - pubmed
+      - crossref
+      - semantic scholar
+
+      # files
+      - annas archive
+
+      # wiki / reference
+      # wikidata deliberately NOT included — query.wikidata.org/sparql
+      # returns persistent HTTP 403 for our server IP on engine init, so
+      # the engine is never registered. See ADR 0016.
+      - wiktionary
+      - wikibooks
+      - wikiquote
+      - wikisource
+
+      # instant answers
+      - duckduckgo weather
+
+general:
+  instance_name: "LOOGI"
+  privacypolicy_url: false
+  donation_url: false
+  contact_url: false
+  enable_metrics: false
+
+# brand block deliberately not overridden: the LOOGI theme links nowhere
+# to brand.issue_url / brand.public_instances / brand.wiki_url / brand.docs_url,
+# so the SearXNG defaults do no harm. Our own code: GitHub link to
+# https://github.com/psimaker, contact mailto:umut.erdem@protonmail.com (see base.html).
+
+search:
+  safe_search: 0
+  autocomplete: "duckduckgo"
+  autocomplete_min: 3
+  default_lang: "auto"
+  ban_time_on_fail: 5
+  max_ban_time_on_fail: 120
+  # Favicons for search results — DuckDuckGo resolver (privacy-respecting,
+  # consistent with autocomplete). Cache lives in Valkey, repeat domains
+  # hit the resolver only once. Other available resolvers:
+  # allesedv | google | yandex.
+  favicon_resolver: "duckduckgo"
+  formats:
+    - html
+    - json
+    - rss
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  base_url: "https://loogi.ch/"
+  secret_key: "ultrasecretkey"  # overridden via SEARXNG_SECRET env var
+  limiter: true
+  public_instance: true
+  image_proxy: true
+  http_protocol_version: "1.1"
+  method: "GET"
+  default_http_headers:
+    X-Content-Type-Options: nosniff
+    X-Download-Options: noopen
+    X-Robots-Tag: noindex, nofollow
+    Referrer-Policy: no-referrer
+
+ui:
+  default_theme: loogi
+  query_in_title: true
+  infinite_scroll: false
+  center_alignment: false
+  default_locale: ""           # auto-detect via Accept-Language
+  search_on_category_select: true
+  hotkeys: default
+  url_formatting: pretty
+
+valkey:
+  url: valkey://valkey:6379/0
+
+outgoing:
+  request_timeout: 3.0
+  max_request_timeout: 10.0
+  pool_connections: 100
+  pool_maxsize: 20
+  enable_http2: true
+
+categories_as_tabs:
+  general:
+  images:
+  videos:
+  news:
+  map:
+  music:
+  it:
+  science:
+  files:
+
+enabled_plugins:
+  - "Hash plugin"
+  - "Self Information"
+  - "Tracker URL remover"
+  - "Unit converter plugin"
+  - "Open Access DOI rewrite"
+  - "Hostnames plugin"
+
+# Engine overrides (deltas on top of the upstream default block).
+# IMPORTANT: with "use_default_settings: true" the "engines" key does NOT
+# go through the deep merge — see ADR 0009. We have to repeat the engine
+# here with all required fields for our override to take effect.
+engines:
+  # braveapi: official Brave Search API (paid, subscription token).
+  # Replaces the HTML scrape (engine: brave), which is reliably blocked
+  # with HTTP 429 on server IPs. See ADR 0016.
+  #
+  # Do NOT hardcode the API key here — it gets patched into the image at
+  # build time from the local .env (BRAVE_API_KEY=...). See Dockerfile +
+  # compose.yml. Keeps the repo secret-free.
+  - name: braveapi
+    engine: braveapi
+    api_key: "BRAVE_API_KEY_PLACEHOLDER"
+    shortcut: br
+    inactive: false
+    categories: [general, web]
+    paging: true
+    safesearch: true
+    time_range_support: true
+    results_per_page: 20
+
+  # brave (HTML scrape) is loaded via the default block because
+  # brave.images/videos/news need it as a network donor. But do NOT use
+  # it for default searches — it only returns 429.
+  - name: brave
+    engine: brave
+    shortcut: brh
+    disabled: true

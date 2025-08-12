@@ -1,0 +1,25 @@
+{#-
+  Tabs / categories — pixel-perfect port of loogi-app.jsx TabsRow.
+  Labels and meta strings come from LOOGI_T (set in base.html, 5 languages).
+  SearXNG category mapping: web→general, papers→science, maps→map.
+  Counts are design-prototype mock values from loogi-data.jsx LOOGI_TABS.
+-#}
+{%- set DESIGN_TABS = [
+  ('general', LOOGI_T.tab_web,    '2,891', '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>'),
+  ('images',  LOOGI_T.tab_images, '412',   '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m4 18 5-5 4 4 3-3 4 4"/>'),
+  ('news',    LOOGI_T.tab_news,   '184',   '<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M8 9h8M8 13h8M8 17h5"/>'),
+  ('science', LOOGI_T.tab_papers, '47',    '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>'),
+] -%}
+<div id="categories" class="search_categories">
+  <div id="categories_container">
+    {%- for cat, label, count, svg in DESIGN_TABS -%}
+      <button type="submit" name="category_{{ cat }}" class="category category_button{% if cat in selected_categories %} selected{% endif %}">
+        <svg class="tab_icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ svg | safe }}</svg>
+        <span class="category_name">{{ label }}</span>
+        {%- if count %}<span class="category_count mono">{{ count }}</span>{% endif -%}
+      </button>
+    {%- endfor -%}
+  </div>
+  {#- Result meta span ("≈ X results · Ys · Z sources") was removed entirely
+      at user request (desktop and phone). -#}
+</div>

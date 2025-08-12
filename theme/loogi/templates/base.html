@@ -1,0 +1,125 @@
+{#- Locale code for info pages + LOOGI-owned UI strings (en/de/fr/es/it).
+    Fallback to en. Set at the top so all includes (simple_search.html,
+    search.html, results.html etc.) can reference the dict — Jinja
+    propagates top-level sets into the render context of every {% include %}. -#}
+{%- set lang2 = (locale_rfc5646 or 'en')[:2] -%}
+{%- if lang2 not in ('en', 'de', 'fr', 'es', 'it') -%}{%- set lang2 = 'en' -%}{%- endif -%}
+{%- set LOOGI_T = {
+  'en': {
+    'placeholder': 'Search the web…',
+    'privacy': 'Privacy', 'terms': 'Terms', 'about': 'About', 'contact': 'Contact',
+    'prev': '← Prev', 'next': 'Next →',
+    'filters': 'Filters', 'time': 'Time', 'language': 'Language', 'safe_search': 'Safe search',
+    'tab_web': 'Web', 'tab_images': 'Images', 'tab_news': 'News', 'tab_videos': 'Videos', 'tab_papers': 'Papers', 'tab_maps': 'Maps',
+    'opt_anytime': 'Anytime', 'opt_day': 'Past 24h', 'opt_week': 'Past week', 'opt_month': 'Past month', 'opt_year': 'Past year',
+    'opt_all_lang': 'All languages',
+    'opt_safe_strict': 'Strict', 'opt_safe_moderate': 'Moderate', 'opt_safe_off': 'Off',
+    'open_new_tab': 'Open in new tab', 'hide_domain': 'Hide domain',
+    'menu': 'Menu', 'close_menu': 'Close menu',
+  },
+  'de': {
+    'placeholder': 'Im Web suchen…',
+    'privacy': 'Datenschutz', 'terms': 'AGB', 'about': 'Über', 'contact': 'Kontakt',
+    'prev': '← Zurück', 'next': 'Weiter →',
+    'filters': 'Filter', 'time': 'Zeitraum', 'language': 'Sprache', 'safe_search': 'Sichere Suche',
+    'tab_web': 'Web', 'tab_images': 'Bilder', 'tab_news': 'News', 'tab_videos': 'Videos', 'tab_papers': 'Studien', 'tab_maps': 'Karten',
+    'opt_anytime': 'Jederzeit', 'opt_day': 'Letzte 24 h', 'opt_week': 'Letzte Woche', 'opt_month': 'Letzter Monat', 'opt_year': 'Letztes Jahr',
+    'opt_all_lang': 'Alle Sprachen',
+    'opt_safe_strict': 'Streng', 'opt_safe_moderate': 'Mittel', 'opt_safe_off': 'Aus',
+    'open_new_tab': 'In neuem Tab öffnen', 'hide_domain': 'Domain ausblenden',
+    'menu': 'Menü', 'close_menu': 'Menü schließen',
+  },
+  'fr': {
+    'placeholder': 'Rechercher sur le web…',
+    'privacy': 'Confidentialité', 'terms': 'Conditions', 'about': 'À propos', 'contact': 'Contact',
+    'prev': '← Préc.', 'next': 'Suiv. →',
+    'filters': 'Filtres', 'time': 'Période', 'language': 'Langue', 'safe_search': 'Recherche sécurisée',
+    'tab_web': 'Web', 'tab_images': 'Images', 'tab_news': 'Actualités', 'tab_videos': 'Vidéos', 'tab_papers': 'Articles', 'tab_maps': 'Cartes',
+    'opt_anytime': 'À tout moment', 'opt_day': 'Dernières 24 h', 'opt_week': 'Dernière semaine', 'opt_month': 'Dernier mois', 'opt_year': 'Dernière année',
+    'opt_all_lang': 'Toutes les langues',
+    'opt_safe_strict': 'Stricte', 'opt_safe_moderate': 'Modérée', 'opt_safe_off': 'Désactivée',
+    'open_new_tab': 'Ouvrir dans un nouvel onglet', 'hide_domain': 'Masquer le domaine',
+    'menu': 'Menu', 'close_menu': 'Fermer le menu',
+  },
+  'es': {
+    'placeholder': 'Buscar en la web…',
+    'privacy': 'Privacidad', 'terms': 'Términos', 'about': 'Acerca de', 'contact': 'Contacto',
+    'prev': '← Ant.', 'next': 'Sig. →',
+    'filters': 'Filtros', 'time': 'Tiempo', 'language': 'Idioma', 'safe_search': 'Búsqueda segura',
+    'tab_web': 'Web', 'tab_images': 'Imágenes', 'tab_news': 'Noticias', 'tab_videos': 'Vídeos', 'tab_papers': 'Artículos', 'tab_maps': 'Mapas',
+    'opt_anytime': 'Cualquier momento', 'opt_day': 'Últimas 24 h', 'opt_week': 'Última semana', 'opt_month': 'Último mes', 'opt_year': 'Último año',
+    'opt_all_lang': 'Todos los idiomas',
+    'opt_safe_strict': 'Estricta', 'opt_safe_moderate': 'Moderada', 'opt_safe_off': 'Desactivada',
+    'open_new_tab': 'Abrir en nueva pestaña', 'hide_domain': 'Ocultar dominio',
+    'menu': 'Menú', 'close_menu': 'Cerrar menú',
+  },
+  'it': {
+    'placeholder': 'Cerca nel web…',
+    'privacy': 'Privacy', 'terms': 'Termini', 'about': 'Informazioni', 'contact': 'Contatto',
+    'prev': '← Prec.', 'next': 'Succ. →',
+    'filters': 'Filtri', 'time': 'Tempo', 'language': 'Lingua', 'safe_search': 'Ricerca sicura',
+    'tab_web': 'Web', 'tab_images': 'Immagini', 'tab_news': 'Notizie', 'tab_videos': 'Video', 'tab_papers': 'Articoli', 'tab_maps': 'Mappe',
+    'opt_anytime': 'In qualsiasi momento', 'opt_day': 'Ultime 24 h', 'opt_week': 'Ultima settimana', 'opt_month': 'Ultimo mese', 'opt_year': 'Ultimo anno',
+    'opt_all_lang': 'Tutte le lingue',
+    'opt_safe_strict': 'Severa', 'opt_safe_moderate': 'Moderata', 'opt_safe_off': 'Disattivata',
+    'open_new_tab': 'Apri in nuova scheda', 'hide_domain': 'Nascondi dominio',
+    'menu': 'Menu', 'close_menu': 'Chiudi menu',
+  },
+}[lang2] -%}
+<!DOCTYPE html>
+<html class="no-js theme-dark" lang="{{ locale_rfc5646 }}" {% if rtl %} dir="rtl"{% endif %}>
+<head>
+  <meta charset="UTF-8">
+  <meta name="endpoint" content="{{ endpoint }}">
+  <meta name="description" content="LOOGI — privacy-respecting search">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  {#- theme-color: iOS Safari tints the URL bar in this color instead of
+      the browser-default black/white → no more abrupt contrast against
+      the page. Value = LOOGI --bg (oklch 0.155 0.005 240) as sRGB hex. -#}
+  <meta name="theme-color" content="#1f2127">
+  <title>{% block title %}{% endblock %}{{ instance_name }}</title>
+  {% block meta %}{% endblock %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='themes/loogi/css/loogi.css') }}?v=2" type="text/css" media="screen">
+  {% if get_setting('server.limiter') or get_setting('server.public_instance') %}
+  <link rel="stylesheet" href="{{ url_for('client_token', token=link_token) }}" type="text/css">
+  {% endif %}
+  {% block head %}
+  <link title="{{ instance_name }}" type="application/opensearchdescription+xml" rel="search" href="{{ opensearch_url }}">
+  {% endblock %}
+  {#- Favicon as PNG only (loogi-mark.svg is broken: contains <image> refs
+      to external data that isn't in the file → renders blank in browser
+      tabs). ?v=2 as a cache-bust for users who already cached the old
+      broken SVG. -#}
+  <link rel="icon" type="image/png" sizes="any" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}?v=2">
+  <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}?v=2">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}?v=2">
+  <link rel="manifest" href="{{ url_for('static', filename='themes/loogi/manifest.webmanifest') }}">
+  <script type="module" src="{{ url_for('static', filename='sxng-core.min.js') }}" client_settings="{{ client_settings }}"></script>
+  <script defer src="{{ url_for('static', filename='themes/loogi/js/loogi.js') }}?v=2"></script>
+</head>
+<body class="{{ endpoint }}_endpoint">
+  <main id="main_{{ self._TemplateReference__context.name|replace('loogi/', '')|replace('.html', '') }}" class="{{ body_class }}">
+    {% if errors %}
+    <div class="dialog-error" role="alert">
+      <a href="#" class="close" aria-label="close" title="close">×</a>
+      <ul>
+        {% for message in errors %}<li>{{ message }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% block header %}{% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <span class="spacer"></span>
+    <a href="{{ url_for('info', pagename='privacy', locale=lang2) }}">{{ LOOGI_T.privacy }}</a>
+    <a href="{{ url_for('info', pagename='terms', locale=lang2) }}">{{ LOOGI_T.terms }}</a>
+    <a href="https://github.com/psimaker" target="_blank" rel="noopener noreferrer">{{ LOOGI_T.about }}</a>
+    <a href="mailto:umut.erdem@protonmail.com">{{ LOOGI_T.contact }}</a>
+  </footer>
+</body>
+</html>

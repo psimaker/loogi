@@ -1,0 +1,212 @@
+{% extends "loogi/base.html" %}
+{% from 'loogi/icons.html' import icon, icon_big, icon_small %}
+
+{#- Macro for hidden inputs in filter and pagination forms.
+    Renders ONLY non-default values → URL stays clean.
+    Optional: 'exclude' skips a filter (the filter form itself sets that
+    filter via the submit button, not via a hidden input). -#}
+{% macro state_inputs(exclude='') -%}
+  {%- for category in selected_categories -%}
+    {%- if category != 'general' -%}
+      <input type="hidden" name="category_{{ category }}" value="1">
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if exclude != 'language' and current_language and current_language not in ('auto', 'all', '') -%}
+    <input type="hidden" name="language" value="{{ current_language }}">
+  {%- endif -%}
+  {%- if exclude != 'time_range' and time_range -%}
+    <input type="hidden" name="time_range" value="{{ time_range }}">
+  {%- endif -%}
+  {%- if exclude != 'safesearch' and safesearch and safesearch|string != '0' -%}
+    <input type="hidden" name="safesearch" value="{{ safesearch }}">
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro engine_data_form(engine_data) -%}
+  {% for engine_name, kv_data in (engine_data or {}).items() %}
+    {% for k, v in kv_data.items() %}
+      <input type="hidden" name="engine_data-{{ engine_name }}-{{ k|e }}" value="{{ v|e }}">
+    {% endfor %}
+  {% endfor %}
+{%- endmacro %}
+
+{% block title %}{% if query_in_title %}{{- q|e }} - {% endif %}{% endblock %}
+{% block meta %}<link rel="alternate" type="application/rss+xml" title="LOOGI search: {{ q|e }}" href="{{ url_for('search', _external=True) }}?q={{ q|urlencode }}&amp;categories={{ selected_categories|join(',') | replace(' ','+') }}&amp;pageno={{ pageno }}&amp;time_range={{ time_range }}&amp;language={{ current_language }}&amp;safesearch={{ safesearch }}&amp;format=rss">{% endblock %}
+{% block content %}
+{% include 'loogi/search.html' %}
+
+{% if results and results|map(attribute='template')|unique|list|count == 1 %}
+  {% set only_template = 'only_template_' + results[0]['template']|default('default')|replace('.html', '') %}
+{% else %}
+  {% set only_template = '' %}
+{% endif %}
+
+<div class="results_layout">
+
+{#- ────────── Filter sidebar ────────── -#}
+<aside id="filters_sidebar">
+  <div class="sidebar_header">
+    <span class="filter_label mono">{{ LOOGI_T.filters }}</span>
+    <button type="button" class="sidebar_collapse_btn" aria-label="{{ LOOGI_T.filters }}" onclick="document.body.classList.toggle('sidebar_collapsed')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate(180deg)"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  {#- Time radio list -#}
+  <div class="filter_section">
+    <span class="filter_label mono">{{ LOOGI_T.time }}</span>
+    <div class="radio_list">
+      {%- for opt_value, opt_label_key in [
+        ('',      'opt_anytime'),
+        ('day',   'opt_day'),
+        ('week',  'opt_week'),
+        ('month', 'opt_month'),
+        ('year',  'opt_year'),
+      ] -%}
+        <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="radio_form">
+          <input type="hidden" name="q" value="{{ q|e }}">
+          {{ state_inputs('time_range') }}
+          <button type="submit" name="time_range" value="{{ opt_value }}" class="radio_option{% if (time_range or '') == opt_value %} selected{% endif %}">
+            <span class="radio_indicator"><span class="radio_dot"></span></span>
+            <span class="radio_label">{{ LOOGI_T[opt_label_key] }}</span>
+          </button>
+        </form>
+      {%- endfor -%}
+    </div>
+  </div>
+
+  {#- Language radio list — 5 options from the design prototype -#}
+  <div class="filter_section">
+    <span class="filter_label mono">{{ LOOGI_T.language }}</span>
+    <div class="radio_list">
+      {%- set LANG_OPTS = [
+        ('all', LOOGI_T.opt_all_lang),
+        ('en',  'English'),
+        ('de',  'Deutsch'),
+        ('fr',  'Français'),
+        ('ja',  '日本語'),
+      ] -%}
+      {%- for opt_value, opt_label in LANG_OPTS -%}
+        <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="radio_form">
+          <input type="hidden" name="q" value="{{ q|e }}">
+          {{ state_inputs('language') }}
+          <button type="submit" name="language" value="{{ opt_value }}" class="radio_option{% if current_language == opt_value %} selected{% endif %}">
+            <span class="radio_indicator"><span class="radio_dot"></span></span>
+            <span class="radio_label">{{ opt_label }}</span>
+          </button>
+        </form>
+      {%- endfor -%}
+    </div>
+  </div>
+
+  {#- SafeSearch radio list -#}
+  <div class="filter_section">
+    <span class="filter_label mono">{{ LOOGI_T.safe_search }}</span>
+    <div class="radio_list">
+      {%- for opt_value, opt_label_key in [
+        ('2', 'opt_safe_strict'),
+        ('1', 'opt_safe_moderate'),
+        ('0', 'opt_safe_off'),
+      ] -%}
+        <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="radio_form">
+          <input type="hidden" name="q" value="{{ q|e }}">
+          {{ state_inputs('safesearch') }}
+          <button type="submit" name="safesearch" value="{{ opt_value }}" class="radio_option{% if safesearch|string == opt_value %} selected{% endif %}">
+            <span class="radio_indicator"><span class="radio_dot"></span></span>
+            <span class="radio_label">{{ LOOGI_T[opt_label_key] }}</span>
+          </button>
+        </form>
+      {%- endfor -%}
+    </div>
+  </div>
+</aside>
+
+{#- ────────── Center column ────────── -#}
+<div id="main_column">
+<div id="center_column">
+
+  {%- if answers -%}
+    {%- include 'loogi/elements/answers.html' -%}
+  {%- endif %}
+
+  <div id="results" class="{{ only_template }}">
+    <div id="urls" role="main">
+      {%- if corrections -%}
+        {%- include 'loogi/elements/corrections.html' -%}
+      {%- endif -%}
+
+      {% for result in results %}
+        {% if result.open_group and not only_template %}<div class="template_group_{{ result['template']|replace('.html', '') }}">{% endif %}
+        {% set index = loop.index %}
+        {% include get_result_template('loogi', result['template']) %}
+        {% if result.close_group and not only_template %}</div>{% endif %}
+      {% endfor %}
+      {% if not results and not answers %}
+        {% include 'loogi/messages/no_results.html' %}
+      {% endif %}
+    </div>
+
+    {% if paging %}
+    <nav id="pagination" role="navigation">
+      {% if pageno > 1 %}
+      <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="previous_page">
+        <input type="hidden" name="q" value="{{ q|e }}">
+        <input type="hidden" name="pageno" value="{{ pageno-1 }}">
+        {{ state_inputs() }}
+        {{- engine_data_form(engine_data) -}}
+        <button type="submit">{{ LOOGI_T.prev }}</button>
+      </form>
+      {% endif %}
+
+      {% set pstart = 1 %}
+      {% set pend = 11 %}
+      {% if pageno > 5 %}
+        {% set pstart = pageno - 4 %}
+        {% set pend = pageno + 6 %}
+      {% endif %}
+      <div class="numbered_pagination">
+      {#- Mobile pagination shows only a sliding window of 5 page numbers
+          starting at pageno (see ADR 0014 + CSS .phone_hidden). The server
+          still renders every page — CSS hides those outside
+          [pageno, pageno+4] on phone. -#}
+      {% for x in range(pstart, pend) %}
+        <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="page_number{% if x < pageno or x > pageno + 4 %} phone_hidden{% endif %}">
+          <input type="hidden" name="q" value="{{ q|e }}">
+          <input type="hidden" name="pageno" value="{{ x }}">
+          {{ state_inputs() }}
+          {{- engine_data_form(engine_data) -}}
+          {% if pageno == x %}
+          <input class="page_number_current" type="button" value="{{ x }}">
+          {% else %}
+          <input class="page_number" type="submit" value="{{ x }}">
+          {% endif %}
+        </form>
+      {% endfor %}
+      </div>
+
+      {%- if results | count > 0 -%}
+      <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="next_page">
+        <input type="hidden" name="q" value="{{ q|e }}">
+        <input type="hidden" name="pageno" value="{{ pageno+1 }}">
+        {{ state_inputs() }}
+        {{- engine_data_form(engine_data) -}}
+        <button type="submit">{{ LOOGI_T.next }}</button>
+      </form>
+      {%- endif -%}
+    </nav>
+    {% endif %}
+  </div>
+
+</div> {#- /#center_column -#}
+</div> {#- /#main_column -#}
+
+</div> {#- /.results_layout -#}
+
+{#- Off-canvas drawer overlay — visible only on phone. Tap closes the drawer. -#}
+<div id="drawer_overlay"></div>
+
+{#- ────────── Floating back-to-top ────────── -#}
+<div id="backToTop">
+  <a href="#" aria-label="{{ _('Back to top') }}">{{ icon_small('navigate-up') }}</a>
+</div>
+{% endblock %}

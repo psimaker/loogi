@@ -1,0 +1,30 @@
+{%- from 'loogi/icons.html' import icon_big -%}
+<form id="search" method="{{ method or 'GET' }}" action="{{ url_for('search') }}" role="search">
+  {#- Topbar: 60px high, padding 0 28px, flex gap 24, [logo | search box flex:1 | lang margin-left:auto] -#}
+  <div id="search_header">
+    <a id="search_logo" href="{{ url_for('index') }}" tabindex="0" title="{{ _('Display the front page') }}">
+      <img src="{{ url_for('static', filename='themes/loogi/img/loogi-wordmark.png') }}" alt="LOOGI" height="40">
+    </a>
+    <div id="search_view">
+      <div class="search_box">
+        <svg class="search_box_icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" name="q" type="text" placeholder="{{ LOOGI_T.placeholder if LOOGI_T else 'Search the web…' }}" tabindex="1" autocomplete="off" autocapitalize="none" spellcheck="false" autocorrect="off" dir="auto" value="{{ q or '' }}">
+        <button id="clear_search" type="reset" aria-label="{{ _('clear') }}" class="hide_if_nojs"><span>{{ icon_big('close') }}</span><span class="show_if_nojs">{{ _('clear') }}</span></button>
+        <button id="send_search" type="submit"
+          {%- if search_on_category_select and selected_categories -%} name="category_{{ selected_categories[0]|replace(' ', '_') }}"{%- endif -%}
+          aria-label="{{ _('search') }}"><span class="hide_if_nojs">{{ icon_big('search') }}</span><span class="show_if_nojs">{{ _('search') }}</span></button>
+        <div class="autocomplete hide_if_nojs"><ul></ul></div>
+      </div>
+    </div>
+    {#- Hamburger for the off-canvas filter drawer (phone only, CSS toggles display) -#}
+    <button id="drawer_toggle" type="button"
+      aria-label="{{ LOOGI_T.menu }}"
+      aria-controls="filters_sidebar"
+      aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+  {#- Tabs: 44px high, padding 0 28px, own border-bottom (the topbar has none) -#}
+  {% set display_tooltip = true %}
+  {% include 'loogi/categories.html' %}
+</form>

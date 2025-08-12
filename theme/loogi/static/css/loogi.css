@@ -1,0 +1,1089 @@
+/* LOOGI theme — hardcoded dark UI, OKLCH palette ported from the design prototype.
+   Fonts via fonts.bunny.net (GDPR-compliant Google Fonts mirror, see ADR 0010). */
+
+@import url('https://fonts.bunny.net/css?family=inter-tight:300,400,500,600,700|jetbrains-mono:400,500&display=swap');
+
+:root {
+  --bg: oklch(0.155 0.005 240);
+  --bg-2: oklch(0.185 0.006 240);
+  --panel: oklch(0.205 0.007 240);
+  --panel-2: oklch(0.235 0.007 240);
+  --line: oklch(0.28 0.008 240);
+  --line-soft: oklch(0.235 0.008 240);
+  --fg: oklch(0.95 0.004 240);
+  --fg-2: oklch(0.78 0.006 240);
+  --fg-3: oklch(0.60 0.008 240);
+  --fg-4: oklch(0.46 0.008 240);
+  --accent: oklch(0.80 0.105 195);
+  --accent-soft: oklch(0.80 0.105 195 / 0.14);
+  --accent-line: oklch(0.80 0.105 195 / 0.35);
+  --link: oklch(0.82 0.07 230);
+  --visited: oklch(0.72 0.09 305);
+  --warn: oklch(0.78 0.12 65);
+  --error: oklch(0.66 0.18 25);
+}
+
+* { box-sizing: border-box; }
+/* NO html { height: 100% } — iOS Safari evaluates that against the initial
+   stable viewport height (innerHeight minus the toolbar area, fixed at
+   page load) and ignores later toolbar show/hide. Body min-height:100dvh
+   is dynamic and can then grow larger than html → body sticks out below
+   html, and in the gap iOS renders the html default background (black in
+   dark mode). Visible as a "black bottom stripe" after every layout
+   recalc (e.g. drawer toggle). Without an explicit height, html adapts
+   to the body content — no mismatch.
+   Background on html as defense-in-depth: if a gap ever does appear, it
+   has our bg color instead of browser-default black. */
+html { margin: 0; padding: 0; background: var(--bg); }
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter Tight', -apple-system, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;     /* fallback for older browsers */
+  min-height: 100dvh;    /* iOS Safari: dynamic viewport — adapts to
+                            URL bar show/hide. */
+  /* No height:100% and no overflow on body — otherwise body becomes its
+     own scroll container and iOS Safari won't collapse the URL bar.
+     Window has to be the scroll root. */
+}
+::selection { background: var(--accent-soft); color: var(--fg); }
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+a { color: var(--link); text-decoration: none; }
+a:visited { color: inherit; }
+a:hover { text-decoration: underline; }
+
+/* Defensive horizontal overflow guard ONLY on html (clip instead of
+   hidden — clip does NOT establish a scroll container, unlike hidden.
+   Fallback: hidden for browsers without clip support; modern Safari /
+   Chrome / Firefox use clip and let the window scroll). */
+html { overflow-x: hidden; overflow-x: clip; }
+
+/* Icons (SVGs aus icons.html, currentColor) */
+.sxng-icon-set, .sxng-icon-set-big, .sxng-icon-set-small {
+  vertical-align: middle;
+  fill: none;
+  stroke: currentColor;
+}
+.sxng-icon-set-small { width: 14px; height: 14px; }
+.sxng-icon-set       { width: 18px; height: 18px; }
+.sxng-icon-set-big   { width: 22px; height: 22px; }
+
+/* Header (no top-nav per design prototype — Preferences/About in the footer) */
+main { flex: 1; display: flex; flex-direction: column; }
+
+/* Decorative search icon before the input — submit on Enter, buttons hidden */
+.search_box_icon { color: var(--fg-3); flex-shrink: 0; }
+body.index_endpoint #send_search,
+body.index_endpoint #clear_search,
+body.results_endpoint #send_search,
+body.results_endpoint #clear_search { display: none; }
+
+/* ───────── Index page ───────── */
+body.index_endpoint main { align-items: center; justify-content: center; }
+body.index_endpoint #main_index {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 24px 20vh;
+  gap: 36px;
+  width: 100%;
+}
+/* Landing page logo (design prototype .logo). Wordmark height 144px. */
+body.index_endpoint .logo {
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+}
+body.index_endpoint .logo img {
+  height: 144px;
+  width: auto;
+  display: block;
+}
+
+/* ───────── Search box (Index — large) ───────── */
+body.index_endpoint #search { width: min(640px, 100%); }
+body.index_endpoint #search_header { display: flex; flex-direction: column; gap: 14px; }
+body.index_endpoint #search_view { width: 100%; }
+body.index_endpoint .search_box {
+  position: relative;
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 28px;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+body.index_endpoint .search_box:focus-within {
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  background: var(--panel);
+}
+body.index_endpoint #q {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 15.5px;
+  letter-spacing: 0.005em;
+}
+body.index_endpoint #q::placeholder { color: var(--fg-4); }
+/* Categories on the index page (hidden — search defaults to general) */
+body.index_endpoint #categories { display: none; }
+
+/* ───────── Results page — top bar (design prototype: blurred sticky) ───────── */
+body.results_endpoint main {
+  display: block;
+}
+body.results_endpoint #main_results {
+  display: block;
+  padding: 0 0 32px;
+  margin: 0;
+}
+#search.with_logo { display: none; }
+
+/* Topbar (spec): fixed height 60px, padding 0 28px, no own border-bottom
+   (the tabs row below carries the line — spec: "Border lines do not
+   overlap. When two containers share borders, only one has the border"). */
+body.results_endpoint #search {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  backdrop-filter: saturate(140%) blur(12px);
+  margin: 0;
+}
+body.results_endpoint #search_header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 28px;
+  height: 72px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+body.results_endpoint #search_logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+body.results_endpoint #search_logo img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+body.results_endpoint #search_view {
+  flex: 1;
+  min-width: 0;
+}
+body.results_endpoint .search_box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  max-width: 800px;
+  transition: border-color .15s, box-shadow .15s;
+}
+body.results_endpoint .search_box:focus-within {
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+body.results_endpoint #q {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--fg);
+  font: inherit;
+  font-size: 15.5px;
+  letter-spacing: 0.005em;
+}
+/* Autocomplete (design prototype has no Send/Clear buttons in the search
+   box — buttons stay in the DOM for sxng-core JS hooks but are hidden via
+   display:none in the global rule above). Autocomplete is only visible
+   when sxng-core JS has populated entries (no-js and empty-ul → hidden). */
+.autocomplete {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+html.no-js .autocomplete,
+.autocomplete:has(ul:empty) {
+  display: none;
+}
+.autocomplete:empty,
+.autocomplete ul:empty { display: none; }
+.autocomplete ul { list-style: none; margin: 0; padding: 6px 0; }
+.autocomplete li {
+  padding: 8px 14px;
+  font-size: 14px;
+  color: var(--fg-2);
+  cursor: pointer;
+}
+.autocomplete li:hover,
+.autocomplete li.active { background: var(--bg-2); color: var(--fg); }
+
+/* Tabs row (spec: fixed 44px, padding 0 28, border-bottom 1 line-soft).
+   Tabs gap 4, padding 0 14. Active underline 2px accent at bottom -1px
+   (overlaps the border with no offset). Meta right via margin-left:auto. */
+#categories {
+  border-bottom: 1px solid var(--line-soft);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#categories_container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 44px;
+}
+.category {
+  position: relative;
+}
+.category_checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.category label,
+.category_button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  font-size: 13.5px;
+  color: var(--fg-3);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.005em;
+  transition: color .12s;
+}
+.category label:hover,
+.category_button:hover { color: var(--fg); }
+.category_checkbox input[type="checkbox"]:checked + label,
+.category_button.selected {
+  color: var(--fg);
+  font-weight: 500;
+}
+.category_button.selected::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.category_button .tab_icon {
+  flex-shrink: 0;
+  color: inherit;
+}
+.category_name { font-size: 13.5px; }
+.category_count {
+  font-size: 10.5px;
+  color: var(--fg-4);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 400;
+}
+.category .help { display: none; }
+
+/* Results layout (spec: max-width 1400, padding 0 28 on main row).
+   [Sidebar 240 | Center flex 1]. */
+.results_layout {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 28px;
+}
+#main_column {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 28px 0;
+}
+#center_column {
+  min-width: 0;
+}
+#urls { min-width: 0; }
+
+/* Sub-desktop layouts are grouped at the end of the file (see ADR 0014):
+   - @media (max-width: 1023px) and (min-width: 641px) → tablet (compact)
+   - @media (max-width: 640px)                          → phone (drawer pattern) */
+body.sidebar_collapsed #filters_sidebar { width: 56px; padding: 20px 0; }
+body.sidebar_collapsed #filters_sidebar > :not(.sidebar_header) { display: none; }
+body.sidebar_collapsed .sidebar_header .filter_label { display: none; }
+body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !important; }
+
+/* ────────── Filter sidebar (LEFT, 240 px) — design prototype Sidebar ────── */
+#filters_sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--line-soft);
+  padding: 22px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  transition: width .18s ease;
+}
+.sidebar_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar_collapse_btn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--fg-3);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color .12s, border-color .12s;
+}
+.sidebar_collapse_btn:hover { color: var(--fg); border-color: var(--line); }
+.filter_section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.filter_label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  font-weight: 500;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* RadioList — custom radio (design prototype RadioList). Spec: gap 6. */
+.radio_list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.radio_form { margin: 0; padding: 0; }
+.radio_option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--fg-2);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+  transition: background .12s, color .12s;
+}
+.radio_option:hover { background: var(--bg-2); }
+.radio_option.selected { color: var(--fg); background: transparent; }
+.radio_indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color .12s;
+}
+.radio_option.selected .radio_indicator { border-color: var(--accent); }
+.radio_dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background .12s;
+}
+.radio_option.selected .radio_dot { background: var(--accent); }
+.radio_label { flex: 1; }
+
+/* CheckboxList — custom checkbox with count (design prototype Sources). Spec: gap 6. */
+.checkbox_list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.checkbox_option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--fg-2);
+  font-size: 13px;
+  transition: background .12s, color .12s;
+}
+.checkbox_option:hover { background: var(--bg-2); }
+.checkbox_option.checked { color: var(--fg); }
+.checkbox_indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .12s, border-color .12s;
+  color: oklch(0.18 0.01 195);
+}
+.checkbox_option.checked .checkbox_indicator { background: var(--accent); border-color: var(--accent); }
+.checkbox_check { opacity: 0; transition: opacity .12s; }
+.checkbox_option.checked .checkbox_check { opacity: 1; }
+.checkbox_label { flex: 1; }
+.checkbox_count {
+  font-size: 10.5px;
+  color: var(--fg-4);
+}
+
+
+/* Result item (spec): padding 18px 0, border-bottom 1 line-soft.
+   Outer = CSS grid [1fr content | auto hover actions] gap 20 (design
+   prototype ResultItem). Inside .result_main = flex column gap 4: 3 rows
+   — URL (mono 12 fg-3) | title (16 fg 500) | snippet (13.5 fg-2 1.55
+   wrap-pretty). min-width 0 on text children, otherwise long text blows
+   out the layout. */
+.result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.result_main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.result:last-child { border-bottom: 0; }
+.result .url_header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-3);
+  font-size: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0;
+}
+.result .url_header:hover { color: var(--fg-2); text-decoration: none; }
+.result-favicon-square {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: white;
+  border-radius: 4px;
+  flex-shrink: 0;
+  letter-spacing: 0;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  overflow: hidden;
+}
+/* Real favicon via resolver — sits absolutely positioned over the letter
+   square. onerror removes the img on load error, exposing the letter
+   square again. background:white in case the favicon is transparent
+   (e.g. SVG without fill) — otherwise the hue bleeds through the logo. */
+.result-favicon-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: white;
+}
+.result .url_wrapper { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.result .url_wrapper span { color: var(--fg-3); }
+.result h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  min-width: 0;
+}
+.result h3 a { color: var(--fg); text-decoration: none; overflow-wrap: anywhere; }
+.result h3 a:hover { color: var(--fg); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
+.result .content {
+  margin: 0;
+  color: var(--fg-2);
+  font-size: 14px;
+  line-height: 1.6;
+  text-wrap: pretty;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.result .content.empty_element { color: var(--fg-4); font-style: italic; }
+.result .highlight { color: var(--accent); font-weight: 500; }
+/* Result item shows only 3 rows (URL / title / snippet) — meta + engines hidden */
+.result .published_date,
+.result .result_length,
+.result .result_views,
+.result .result_author,
+.result .engines,
+.result .break,
+.result .thumbnail { display: none; }
+
+/* Image results grid */
+#urls.only_template_images,
+.only_template_images #urls {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.result-images { padding: 0; border: 0; }
+.result-images a {
+  display: block;
+  position: relative;
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+.result-images img.image_thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.result-images .title,
+.result-images .source,
+.result-images .image_resolution { display: none; }
+.result-images .detail { display: none; }
+
+
+/* Engines table */
+.engine-stats { width: 100%; border-collapse: collapse; font-size: 12px; }
+.engine-stats td { padding: 4px 0; color: var(--fg-3); }
+.engine-stats .engine-name { color: var(--fg-2); }
+.engine-stats .response-error { color: var(--warn); text-align: right; }
+.engine-stats .response-time { text-align: right; }
+.bar-chart-graph { display: inline-block; width: 60px; height: 6px; background: var(--bg-2); border-radius: 3px; vertical-align: middle; margin-left: 6px; overflow: hidden; }
+.bar-chart-bar { height: 100%; background: var(--accent); }
+
+/* Answers */
+#answers {
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  grid-column: 1 / -1;
+}
+#answers .title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fg-3); margin: 0 0 8px; }
+#answers .answer { font-size: 15px; color: var(--fg); }
+
+/* Corrections */
+#corrections {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--fg-3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#corrections h4 { margin: 0 8px 0 0; font-size: 13px; font-weight: 500; color: var(--fg-3); }
+#corrections form { display: inline; margin: 0; }
+#corrections input[type="submit"] {
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  color: var(--fg-2);
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+#corrections input[type="submit"]:hover { color: var(--fg); border-color: var(--accent-line); background: var(--accent-soft); }
+
+/* Pagination — see block further down (design prototype PageBtn). */
+
+/* Footer — flex, right-aligned via .spacer (design prototype LOOGI.html) */
+footer {
+  border-top: 1px solid var(--line-soft);
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  font-size: 12px;
+  color: var(--fg-4);
+}
+footer .spacer { flex: 1; }
+/* Override the visited state explicitly — otherwise the global
+   a:visited (color:inherit) would set footer links to var(--fg-4)
+   (footer color), making them darker than unvisited var(--fg-3). */
+footer a,
+footer a:visited { color: var(--fg-3); text-decoration: none; }
+footer a:hover { color: var(--fg); text-decoration: none; }
+
+/* Errors */
+.dialog-error,
+.dialog-error-block {
+  background: var(--panel);
+  border: 1px solid var(--error);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 16px 0;
+  color: var(--fg);
+  font-size: 14px;
+}
+.dialog-error .close { float: right; color: var(--fg-3); }
+
+/* Back-to-top */
+#backToTop {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 30;
+  display: none;
+}
+#backToTop a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--fg-2);
+}
+#backToTop a:hover { color: var(--fg); }
+
+/* Hide nojs widgets */
+.show_if_nojs { display: none; }
+
+/* Preferences (minimal style — functional) */
+body.preferences_endpoint #main_preferences {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px 32px;
+}
+.preferences_back { margin: 16px 0; }
+.preferences_back a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  color: var(--fg-2);
+  font-size: 13px;
+}
+.preferences_back a:hover { color: var(--fg); background: var(--panel); text-decoration: none; }
+
+/* About / Info pages (Markdown-rendered: privacy, terms, about, search-syntax) */
+main.page_with_header #page_logo {
+  display: block;
+  padding: 22px 0 12px;
+  text-align: center;
+}
+main.page_with_header #page_logo img {
+  height: 56px;
+  width: auto;
+  display: inline-block;
+}
+body.info_endpoint main,
+main.page_with_header {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+body.info_endpoint ul.tabs,
+main.page_with_header ul.tabs {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 24px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line-soft);
+}
+body.info_endpoint ul.tabs li,
+main.page_with_header ul.tabs li { margin: 0; }
+body.info_endpoint ul.tabs a,
+main.page_with_header ul.tabs a {
+  display: inline-block;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  color: var(--fg-3);
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  transition: color .12s, border-color .12s;
+  margin-bottom: -1px;
+}
+body.info_endpoint ul.tabs a:hover,
+main.page_with_header ul.tabs a:hover { color: var(--fg); }
+body.info_endpoint ul.tabs a.active,
+main.page_with_header ul.tabs a.active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+.info-page {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--fg-2);
+}
+.info-page h1 { font-size: 28px; font-weight: 600; color: var(--fg); margin: 16px 0 18px; }
+.info-page h2 { font-size: 19px; font-weight: 600; color: var(--fg); margin: 28px 0 10px; }
+.info-page h3 { font-size: 16px; font-weight: 600; color: var(--fg); margin: 20px 0 8px; }
+.info-page p  { margin: 8px 0 12px; }
+.info-page ul, .info-page ol { padding-left: 22px; margin: 8px 0 12px; }
+.info-page li { margin: 4px 0; }
+.info-page a { color: var(--link); }
+.info-page a:hover { color: var(--accent); }
+.info-page code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+}
+.info-page hr {
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  margin: 24px 0;
+}
+.info-page strong { color: var(--fg); font-weight: 600; }
+
+/* Result item hover actions (design prototype ResultItem) — 2nd grid column */
+.result_actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity .15s ease;
+  pointer-events: none;
+}
+.result:hover .result_actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.result_action {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--fg-3);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .12s, color .12s;
+}
+.result_action:hover {
+  background: var(--panel);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+/* ────────── Pagination polish (design prototype Pagination / PageBtn) ────────── */
+#pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px 0 60px;
+  flex-wrap: wrap;
+}
+#pagination form { margin: 0; padding: 0; display: inline; }
+.numbered_pagination { display: inline-flex; gap: 6px; }
+/* Pagination buttons — only the input/button elements, NOT the wrapping
+   <form class="page_number">. (Otherwise browsers render both the form
+   wrapper AND the input with a box style → 2 boxes per number.) */
+#pagination .previous_page button,
+#pagination .next_page button,
+#pagination input[type="submit"],
+#pagination input[type="button"] {
+  appearance: none;
+  -webkit-appearance: none;
+  min-width: 36px;
+  height: 32px;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--fg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 30px;
+  text-align: center;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#pagination .previous_page button:hover,
+#pagination .next_page button:hover,
+#pagination input[type="submit"]:hover {
+  color: var(--fg);
+  background: var(--panel);
+  border-color: var(--line);
+}
+#pagination input.page_number_current {
+  background: var(--accent-soft);
+  color: var(--fg);
+  border-color: var(--accent-line);
+  cursor: default;
+}
+
+/* ────────── Hamburger toggle (off-canvas filter drawer) ────────── */
+/* Default: only visible in the phone block (see further down). */
+#drawer_toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  color: var(--fg-3);
+  cursor: pointer;
+  transition: color .12s, border-color .12s, background .12s;
+}
+#drawer_toggle:hover { color: var(--fg); border-color: var(--line); }
+#drawer_toggle:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 2px; }
+
+/* ────────── Off-canvas drawer overlay (default — visible only on phone) ─── */
+#drawer_overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+  z-index: 70;
+  display: none;  /* completely out of the layout on desktop / tablet */
+}
+
+/* ────────── Mobile (Phone ≤ 640 px) ────────── */
+@media (max-width: 640px) {
+  /* Topbar compact: 56 px content area + safe-area-inset-top for the
+     notch. Sticky top stays 0 (bar runs up to the notch); padding-top
+     pushes the content below the notch. */
+  body.results_endpoint #search { padding-top: env(safe-area-inset-top); }
+  body.results_endpoint #search_header {
+    height: auto;
+    min-height: 56px;
+    gap: 12px;
+    padding: 0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+  }
+  body.results_endpoint #search_logo img { height: 28px; }
+  body.results_endpoint .search_box {
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 12px;
+    gap: 10px;
+  }
+  body.results_endpoint #q { font-size: 15px; }
+
+  /* Hamburger visible only on phone */
+  #drawer_toggle { display: inline-flex; }
+
+  /* ───── Filter sidebar as off-canvas drawer ─────
+     The drawer pattern wins even if body.sidebar_collapsed is set
+     (e.g. carried over from a previous tablet session). */
+  #filters_sidebar,
+  body.sidebar_collapsed #filters_sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(85vw, 320px);
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    z-index: 80;
+    background: var(--bg);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: calc(env(safe-area-inset-top) + 22px)
+             max(20px, env(safe-area-inset-left))
+             calc(env(safe-area-inset-bottom) + 32px)
+             max(20px, env(safe-area-inset-left));
+    border-right: 1px solid var(--line-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  /* If sidebar_collapsed was active before: show contents fully again. */
+  body.sidebar_collapsed #filters_sidebar > :not(.sidebar_header) { display: revert; }
+  body.sidebar_collapsed .sidebar_header .filter_label { display: revert; }
+
+  /* Drawer open: slide in. NO body scroll lock (neither CSS overflow nor
+     JS position:fixed) — both change the body's scroll container status,
+     which iOS Safari interprets as a trigger for URL bar reveal. Drawer
+     and overlay cover everything visually, so body scroll behind them is
+     invisible. See setDrawerOpen() in loogi.js for the iOS bottom-toolbar
+     nudge after close. */
+  body.drawer_open #filters_sidebar,
+  body.drawer_open.sidebar_collapsed #filters_sidebar { transform: translateX(0); }
+
+  /* Activate the overlay (display:none → block so the transition takes
+     effect). touch-action:none prevents swipe gestures on the overlay
+     surface from affecting the body scroll behind it — tap (click-to-close)
+     stays functional because click events are not filtered by touch-action. */
+  #drawer_overlay { display: block; touch-action: none; }
+  body.drawer_open #drawer_overlay { opacity: 1; pointer-events: auto; }
+
+  /* Collapse btn in the sidebar is redundant on phone (the drawer pattern
+     has its own close mechanisms: hamburger again, overlay tap, ESC). */
+  .sidebar_collapse_btn { display: none; }
+
+  /* Layout in the center column: no left/right padding via .results_layout
+     since the drawer is fixed and doesn't shift along. main_column gets
+     its own. */
+  .results_layout { padding: 0; }
+  #main_column { padding: 16px max(16px, env(safe-area-inset-right)) 0
+                          max(16px, env(safe-area-inset-left)); }
+
+  /* ───── Tabs row horizontal scrollable ─────
+     4 tabs + counts don't fit in a 375 px viewport. overflow-x:auto lets
+     the user scroll horizontally; scrollbar visually hidden (touch
+     inertia still active).
+     overflow-y:hidden + touch-action:pan-x prevent iOS Safari from also
+     scrolling/bouncing the tab strip vertically — otherwise the user can
+     "drag" the strip up or down with nothing to see. */
+  #categories {
+    padding: 0 max(12px, env(safe-area-inset-left));
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-y: none;
+    touch-action: pan-x;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  #categories::-webkit-scrollbar { display: none; }
+  #categories_container { flex-shrink: 0; }
+
+  /* ───── Result item: hide actions on phone, layout becomes block ─────
+     "Open in new tab" and "Hide domain" are more nuisance than value on
+     phone (small display, no hover, thumb covers the right edge). Hide
+     them entirely and switch grid to block since the second column would
+     otherwise reserve space. */
+  .result_actions { display: none; }
+  .result { display: block; }
+
+  /* ───── Index page: more compact logo + padding ───── */
+  body.index_endpoint .logo img { height: 88px; }
+  body.index_endpoint #main_index {
+    padding: 24px max(16px, env(safe-area-inset-left)) 16vh
+             max(16px, env(safe-area-inset-right));
+    gap: 24px;
+  }
+
+  /* ───── Pagination touch targets (Apple HIG ≥44px) ─────
+     On phone only 5 page numbers: [pageno, pageno+4]. Forms outside that
+     range carry the .phone_hidden class (see results.html) and are
+     hidden here. */
+  #pagination {
+    gap: 8px;
+    padding: 24px max(12px, env(safe-area-inset-left))
+             calc(env(safe-area-inset-bottom) + 60px)
+             max(12px, env(safe-area-inset-right));
+  }
+  #pagination form.phone_hidden { display: none; }
+  #pagination .previous_page button,
+  #pagination .next_page button,
+  #pagination input[type="submit"],
+  #pagination input[type="button"] {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 14px;
+    font-size: 13.5px;
+  }
+
+  /* ───── Footer: centered, wrap, safe-area-inset-bottom ───── */
+  footer {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    padding: 16px max(16px, env(safe-area-inset-right))
+             calc(env(safe-area-inset-bottom) + 16px)
+             max(16px, env(safe-area-inset-left));
+  }
+  footer .spacer { display: none; }
+
+  /* ───── BackToTop: positioned above the home bar ───── */
+  #backToTop {
+    right: max(16px, env(safe-area-inset-right));
+    bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+}
+
+/* ────────── Tablet (641–1023 px) ────────── */
+/* Layout concept (240 sidebar + center) stays; just more compact padding
+   so 768 px iPad portrait keeps enough room for content. */
+@media (max-width: 1023px) and (min-width: 641px) {
+  .results_layout { padding: 0 16px; }
+  #main_column { padding: 20px 20px 0; }
+}
+

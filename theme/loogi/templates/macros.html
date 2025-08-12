@@ -1,0 +1,99 @@
+{% from 'loogi/icons.html' import icon_small %}
+
+<!-- Draw favicon -->
+{% macro draw_favicon(favicon) -%}
+    <img width="14" height="14" class="favicon" src="{{ url_for('static', filename='themes/loogi/img/icons/' + favicon + '.png') }}" alt="{{ favicon }}">
+{%- endmacro %}
+
+<!-- Result favicon square: 18x18 square. If a favicon_resolver is
+     configured (settings.yml → search.favicon_resolver), the real favicon
+     is layered on top of the colored letter square; if the image request
+     fails (resolver 404 / cache miss / network), onerror removes the img
+     tag and the letter square is the fallback.
+     Hue is deterministic from the letter index (A=0 → 0, B=1 → 14, ...) mod 360. -->
+{%- macro favicon_square(netloc) -%}
+  {%- set d = (netloc or '?') | replace('www.', '') -%}
+  {%- set first = (d or '?')[0] | upper -%}
+  {%- set ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' -%}
+  {%- set idx = ALPHA.split(first)[0] | length -%}
+  {%- set hue = (idx * 14) % 360 -%}
+  <span class="result-favicon-square" style="background: oklch(0.55 0.13 {{ hue }})">{{ first }}
+    {%- if get_setting('search.favicon_resolver') and netloc -%}
+    <img class="result-favicon-img" src="{{ favicon_url(netloc) }}" loading="lazy" alt="" onerror="this.remove()">
+    {%- endif -%}
+  </span>
+{%- endmacro -%}
+
+{% macro result_open_link(url, classes='') -%}
+    <a href="{{ url }}" {% if classes %}class="{{ classes }}" {% endif %}{% if results_on_new_tab %}target="_blank" rel="noopener noreferrer"{% else %}rel="noreferrer"{% endif %}>
+{%- endmacro %}
+
+{%- macro result_close_link() -%}
+    </a>
+{%- endmacro %}
+
+{%- macro result_link(url, title, classes='') -%}
+    {{ result_open_link(url, classes) }}{{ title }}{{ result_close_link() }}
+{%- endmacro -%}
+
+<!-- Draw result header — spec: 3 vertical rows with gap 4 in .result_main.
+     Outer .result is a CSS grid [1fr | auto] with the hover-actions column
+     on the right. Row 1 = URL, row 2 = title, row 3 = snippet (comes from
+     default.html). -->
+{% macro result_header(result, favicons, image_proxify) -%}
+<article class="result {% if result['template'] %}result-{{ result.template|replace('.html', '') }}{% else %}result-default{% endif %} {% if result['category'] %}category-{{ result['category'] }}{% endif %}">
+<div class="result_main">
+  {{- result_open_link(result.url, "url_header") -}}
+  {{ favicon_square(result.parsed_url.netloc) }}
+  <span class="url_wrapper">
+    {%- for part in get_pretty_url(result.parsed_url) -%}
+    <span class="url_o{{loop.index}}"><span class="url_i{{loop.index}}">{{- part -}}</span></span>
+    {%- endfor %}
+  </span>
+  {{- result_close_link() -}}
+  <h3>{{ result_link(result.url, result.title|safe) }}</h3>
+{%- endmacro -%}
+
+<!-- Draw result sub header -->
+{%- macro result_sub_header(result) -%}
+  {%- if result.publishedDate %}<time class="published_date" datetime="{{ result.pubdate }}" >{{ result.publishedDate }}</time>{% endif -%}
+  <!-- Length is displayed inside the thumbnail if there's any, so don't display it here a second time -->
+  {%- if result.length and not result.thumbnail %}<div class="result_length">{{ _('Length') }}: {{ result.length }}</div>{% endif -%}
+  {%- if result.views %}<div class="result_views">{{ _('Views') }}: {{ result.views }}</div>{% endif -%}
+  {%- if result.author %}<div class="result_author">{{ _('Author') }}: {{ result.author }}</div>{% endif -%}
+  {%- if result.metadata %}<div class="highlight">{{ result.metadata }}</div>{% endif -%}
+{%- endmacro -%}
+
+<!-- Draw result sub footer -->
+{%- macro result_sub_footer(result) -%}
+<div class="engines">
+  {% for engine in result.engines %}<span>{{ engine }}</span>{% endfor %}
+  {{ icon_small('ellipsis-vertical') + result_link(cache_url + result.url, _('cached'), "cache_link") }}
+</div>{{- '' -}}
+<div class="break"></div>{{- '' -}}
+{%- endmacro -%}
+
+<!-- Draw result footer — design prototype ResultItem: closes .result_main,
+     opens + closes .result_actions as the 2nd grid column. -->
+{%- macro result_footer(result) -%}
+</div> {#- /.result_main -#}
+<div class="result_actions" aria-hidden="true">
+  <a href="{{ result.url }}" target="_blank" rel="noopener noreferrer" class="result_action" title="{{ LOOGI_T.open_new_tab if LOOGI_T else 'Open in new tab' }}">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 14 20 4M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>
+  </a>
+  <button type="button" class="result_action" title="{{ LOOGI_T.hide_domain if LOOGI_T else 'Hide domain' }}" data-domain="{{ result.parsed_url.netloc }}" onclick="this.closest('.result').style.display='none'">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8M9.4 5.6A10.7 10.7 0 0 1 12 5c5 0 9 4 10 7-.4 1.2-1.3 2.7-2.6 4M6 6.6C3.7 8.3 2.4 10.6 2 12c1 3 5 7 10 7 1.7 0 3.3-.4 4.7-1.2"/></svg>
+  </button>
+</div>
+</article>
+{%- endmacro -%}
+
+<!-- input checkbox, on/off slider user can tap-->
+{%- macro checkbox_onoff(name, checked) -%}
+  <input type="checkbox" {{- ' ' -}}
+         name="{{ name }}" {{- ' ' -}}
+         id="{{ name }}" {{- ' ' -}}
+         aria-labelledby="pref_{{ name }}"{{- ' ' -}}
+         class="checkbox-onoff"{{- ' ' -}}
+         {%- if checked -%} checked{%- endif -%}/>
+{%- endmacro -%}

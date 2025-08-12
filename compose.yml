@@ -1,0 +1,92 @@
+# LOOGI — Docker Compose
+# Reverse proxy and TLS handled externally by NPM via proxy-net (see ADR 0008).
+# No ports: published — NPM reaches the container via the "loogi" hostname on 8080.
+
+name: loogi
+
+services:
+  searxng:
+    build:
+      context: .
+      args:
+        # Brave Search API key — patched into /etc/searxng/settings.yml at
+        # build time. Sourced from local .env (gitignored). Empty default =
+        # engine disables itself on init (no crash). See ADR 0016.
+        BRAVE_API_KEY: ${BRAVE_API_KEY:-}
+    image: loogi:latest
+    container_name: loogi
+    hostname: loogi
+    restart: unless-stopped
+    networks:
+      - proxy-net          # incoming web traffic via NPM (TLS terminated there)
+      - loogi-net          # local service consumers (crawl4ai etc.) — IP-limit bypass via pass_ip
+      - loogi-internal     # Valkey backend
+    environment:
+      - SEARXNG_BASE_URL=https://loogi.ch/
+      - SEARXNG_SECRET=${SEARXNG_SECRET}
+      - INSTANCE_NAME=LOOGI
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    container_name: loogi-valkey
+    restart: unless-stopped
+    command: ["valkey-server", "--save", "30", "1", "--loglevel", "warning"]
+    networks:
+      - loogi-internal
+    volumes:
+      - valkey-data:/data
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  # NPM ingress network, provided by the reverse proxy.
+  proxy-net:
+    external: true
+
+  # Bypass network for local service consumers (e.g. crawl4ai).
+  # Create before the first "compose up":
+  #   docker network create --subnet=172.30.0.0/24 loogi-net
+  # Other compose stacks join via:
+  #   networks: { loogi-net: { external: true } }
+  loogi-net:
+    external: true
+
+  # Backend-only network for valkey. internal=true ⇒ no internet access
+  # for containers in here (valkey doesn't need any).
+  loogi-internal:
+    driver: bridge
+    internal: true
+
+volumes:
+  valkey-data:
