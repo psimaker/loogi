@@ -36,7 +36,11 @@ body {
   text-rendering: optimizeLegibility;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100vh;     /* Fallback fuer aeltere Browser */
+  min-height: 100dvh;    /* iOS Safari: dynamic viewport behebt Address-Bar-Show/Hide-Quirk
+                            beim Scroll-End — sonst muss der User "nachziehen" um den
+                            Footer komplett ueber die wieder erscheinende Address-Bar
+                            zu schieben. */
 }
 ::selection { background: var(--accent-soft); color: var(--fg); }
 .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
@@ -1024,16 +1028,25 @@ main.page_with_header ul.tabs a.active {
     font-size: 13.5px;
   }
 
-  /* ───── Footer: zentriert, wrap, safe-area-inset-bottom ───── */
+  /* ───── Footer: zentriert, wrap, safe-area-inset-bottom ─────
+     Padding-Bottom grosszuegig (28 + safe-area), damit bei iOS-Safari-
+     Address-Bar-Show/Hide-Verhalten am Scroll-End die Footer-Links nicht
+     hinter der wieder erscheinenden Adressleiste verschwinden. */
   footer {
     flex-wrap: wrap;
     justify-content: center;
     gap: 14px;
     padding: 16px max(16px, env(safe-area-inset-right))
-             calc(env(safe-area-inset-bottom) + 16px)
+             max(28px, calc(env(safe-area-inset-bottom) + 28px))
              max(16px, env(safe-area-inset-left));
   }
   footer .spacer { display: none; }
+
+  /* ───── BackToTop: Position oberhalb der Home-Bar ───── */
+  #backToTop {
+    right: max(16px, env(safe-area-inset-right));
+    bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
 }
 
 /* ────────── Tablet (641–1023 px) ────────── */
