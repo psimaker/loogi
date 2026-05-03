@@ -264,14 +264,6 @@ html.no-js .autocomplete,
   gap: 4px;
   height: 44px;
 }
-#categories .results_meta {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--fg-4);
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-}
 .category {
   position: relative;
 }
@@ -983,8 +975,7 @@ main.page_with_header ul.tabs a.active {
   /* ───── Tabs-Reihe horizontal scrollbar ─────
      4 Tabs + Counts passen nicht in 375 px Viewport. overflow-x:auto laesst
      den User horizontal scrollen, scrollbar visuell ausgeblendet (Touch-
-     Inertia trotzdem aktiv). results_meta ist auf Phone redundant — Counts
-     stehen an den Tabs.
+     Inertia trotzdem aktiv).
      overflow-y:hidden + touch-action:pan-x verhindern dass iOS-Safari die
      Tab-Strip auch vertikal scrollen/bouncen laesst — sonst kann der User
      den Strip nach unten/oben "ziehen" obwohl es nichts zu sehen gibt. */
@@ -999,7 +990,6 @@ main.page_with_header ul.tabs a.active {
   }
   #categories::-webkit-scrollbar { display: none; }
   #categories_container { flex-shrink: 0; }
-  #categories .results_meta { display: none; }
 
   /* ───── Result-Item: Actions weg auf Phone, Layout block ─────
      "Im neuen Tab oeffnen" und "Domain ausblenden" sind auf Phone mehr

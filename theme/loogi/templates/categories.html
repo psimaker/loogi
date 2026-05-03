@@ -20,9 +20,6 @@
       </button>
     {%- endfor -%}
   </div>
-  {%- set result_count = (results or []) | length -%}
-  {%- set source_count = (timings or []) | length -%}
-  {%- if result_count or source_count -%}
-    <span class="results_meta mono">{%- if result_count %}≈ {{ result_count }} {{ LOOGI_T.meta_results }}{% endif -%}{%- if max_response_time %}{% if result_count %} · {% endif %}{{ '%.2f'|format(max_response_time) }}s{% endif -%}{%- if source_count %} · {{ source_count }} {{ LOOGI_T.meta_sources }}{% endif -%}</span>
-  {%- endif -%}
+  {#- Result-Meta-Span ("≈ X Ergebnisse · Ys · Z Quellen") wurde auf User-
+      Wunsch komplett entfernt (Desktop und Phone). -#}
 </div>
