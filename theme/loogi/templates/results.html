@@ -1,12 +1,35 @@
 {% extends "loogi/base.html" %}
 {% from 'loogi/icons.html' import icon, icon_big, icon_small %}
+
+{#- Macro fuer hidden inputs in Filter- und Pagination-Forms.
+    Rendert NUR non-default Werte → URL bleibt clean.
+    Optional: 'exclude' ueberspringt einen Filter (in der Filter-Form
+    selber wird der Filter via Submit-Button gesetzt, nicht hidden). -#}
+{% macro state_inputs(exclude='') -%}
+  {%- for category in selected_categories -%}
+    {%- if category != 'general' -%}
+      <input type="hidden" name="category_{{ category }}" value="1">
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if exclude != 'language' and current_language and current_language not in ('auto', 'all', '') -%}
+    <input type="hidden" name="language" value="{{ current_language }}">
+  {%- endif -%}
+  {%- if exclude != 'time_range' and time_range -%}
+    <input type="hidden" name="time_range" value="{{ time_range }}">
+  {%- endif -%}
+  {%- if exclude != 'safesearch' and safesearch and safesearch|string != '0' -%}
+    <input type="hidden" name="safesearch" value="{{ safesearch }}">
+  {%- endif -%}
+{%- endmacro %}
+
 {% macro engine_data_form(engine_data) -%}
-  {% for engine_name, kv_data in engine_data.items() %}
+  {% for engine_name, kv_data in (engine_data or {}).items() %}
     {% for k, v in kv_data.items() %}
       <input type="hidden" name="engine_data-{{ engine_name }}-{{ k|e }}" value="{{ v|e }}">
     {% endfor %}
   {% endfor %}
 {%- endmacro %}
+
 {% block title %}{% if query_in_title %}{{- q|e }} - {% endif %}{% endblock %}
 {% block meta %}<link rel="alternate" type="application/rss+xml" title="LOOGI search: {{ q|e }}" href="{{ url_for('search', _external=True) }}?q={{ q|urlencode }}&amp;categories={{ selected_categories|join(',') | replace(' ','+') }}&amp;pageno={{ pageno }}&amp;time_range={{ time_range }}&amp;language={{ current_language }}&amp;safesearch={{ safesearch }}&amp;format=rss">{% endblock %}
 {% block content %}
@@ -18,21 +41,9 @@
   {% set only_template = '' %}
 {% endif %}
 
-{#-
-  =============================================================================
-  Results-Layout — pixel-perfekter Port von loogi-app.jsx App-Komponente
-  (LOOGI - Search/loogi-app.jsx, ueberarbeitete Version vom 2026-05-03):
-  Aussen-Flex `[240px Filter-Sidebar | 1fr Main-Block]`, Main-Block hat in
-  dieser Designversion nur eine Center-Column (FilterChips, AISummary,
-  InfoColumn und floating Tweaks-Panel sind in der ueberarbeiteten
-  Designvorlage entfernt worden).
-  =============================================================================
--#}
 <div class="results_layout">
 
-{#- ────────── Filter-Sidebar (LINKS, 240 px) — nur funktionale Filter:
-    Zeitraum, Sprache, Sichere Suche. Region/Sources entfernt (kein
-    SearXNG-Backing, waren visual-only). ────────── -#}
+{#- ────────── Filter-Sidebar ────────── -#}
 <aside id="filters_sidebar">
   <div class="sidebar_header">
     <span class="filter_label mono">{{ LOOGI_T.filters }}</span>
@@ -54,9 +65,7 @@
       ] -%}
         <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="radio_form">
           <input type="hidden" name="q" value="{{ q|e }}">
-          {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
-          <input type="hidden" name="language" value="{{ current_language }}">
-          <input type="hidden" name="safesearch" value="{{ safesearch }}">
+          {{ state_inputs('time_range') }}
           <button type="submit" name="time_range" value="{{ opt_value }}" class="radio_option{% if (time_range or '') == opt_value %} selected{% endif %}">
             <span class="radio_indicator"><span class="radio_dot"></span></span>
             <span class="radio_label">{{ LOOGI_T[opt_label_key] }}</span>
@@ -80,9 +89,7 @@
       {%- for opt_value, opt_label in LANG_OPTS -%}
         <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="radio_form">
           <input type="hidden" name="q" value="{{ q|e }}">
-          {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
-          <input type="hidden" name="time_range" value="{{ time_range }}">
-          <input type="hidden" name="safesearch" value="{{ safesearch }}">
+          {{ state_inputs('language') }}
           <button type="submit" name="language" value="{{ opt_value }}" class="radio_option{% if current_language == opt_value %} selected{% endif %}">
             <span class="radio_indicator"><span class="radio_dot"></span></span>
             <span class="radio_label">{{ opt_label }}</span>
@@ -103,9 +110,7 @@
       ] -%}
         <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="radio_form">
           <input type="hidden" name="q" value="{{ q|e }}">
-          {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
-          <input type="hidden" name="language" value="{{ current_language }}">
-          <input type="hidden" name="time_range" value="{{ time_range }}">
+          {{ state_inputs('safesearch') }}
           <button type="submit" name="safesearch" value="{{ opt_value }}" class="radio_option{% if safesearch|string == opt_value %} selected{% endif %}">
             <span class="radio_indicator"><span class="radio_dot"></span></span>
             <span class="radio_label">{{ LOOGI_T[opt_label_key] }}</span>
@@ -116,12 +121,10 @@
   </div>
 </aside>
 
-{#- ────────── Center-Column (Designprototyp main: 1fr) ────────── -#}
+{#- ────────── Center-Column ────────── -#}
 <div id="main_column">
 <div id="center_column">
 
-  {#- Answers ueber den Ergebnissen — wird im Designprototyp nicht ausgewiesen,
-      bleibt aber als SearXNG-default-Ausgabe (Calculator etc.) erhalten. -#}
   {%- if answers -%}
     {%- include 'loogi/elements/answers.html' -%}
   {%- endif %}
@@ -148,13 +151,8 @@
       {% if pageno > 1 %}
       <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="previous_page">
         <input type="hidden" name="q" value="{{ q|e }}">
-        {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
         <input type="hidden" name="pageno" value="{{ pageno-1 }}">
-        <input type="hidden" name="language" value="{{ current_language }}">
-        <input type="hidden" name="time_range" value="{{ time_range }}">
-        <input type="hidden" name="safesearch" value="{{ safesearch }}">
-        <input type="hidden" name="theme" value="{{ theme }}">
-        {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}">{% endif %}
+        {{ state_inputs() }}
         {{- engine_data_form(engine_data) -}}
         <button type="submit">{{ LOOGI_T.prev }}</button>
       </form>
@@ -170,13 +168,8 @@
       {% for x in range(pstart, pend) %}
         <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="page_number">
           <input type="hidden" name="q" value="{{ q|e }}">
-          {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
           <input type="hidden" name="pageno" value="{{ x }}">
-          <input type="hidden" name="language" value="{{ current_language }}">
-          <input type="hidden" name="time_range" value="{{ time_range }}">
-          <input type="hidden" name="safesearch" value="{{ safesearch }}">
-          <input type="hidden" name="theme" value="{{ theme }}">
-          {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}">{% endif %}
+          {{ state_inputs() }}
           {{- engine_data_form(engine_data) -}}
           {% if pageno == x %}
           <input class="page_number_current" type="button" value="{{ x }}">
@@ -190,13 +183,8 @@
       {%- if results | count > 0 -%}
       <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="next_page">
         <input type="hidden" name="q" value="{{ q|e }}">
-        {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
         <input type="hidden" name="pageno" value="{{ pageno+1 }}">
-        <input type="hidden" name="language" value="{{ current_language }}">
-        <input type="hidden" name="time_range" value="{{ time_range }}">
-        <input type="hidden" name="safesearch" value="{{ safesearch }}">
-        <input type="hidden" name="theme" value="{{ theme }}">
-        {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}">{% endif %}
+        {{ state_inputs() }}
         {{- engine_data_form(engine_data) -}}
         <button type="submit">{{ LOOGI_T.next }}</button>
       </form>

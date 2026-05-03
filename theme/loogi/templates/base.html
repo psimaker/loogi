@@ -79,8 +79,12 @@
   {% block head %}
   <link title="{{ instance_name }}" type="application/opensearchdescription+xml" rel="search" href="{{ opensearch_url }}">
   {% endblock %}
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}">
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.svg') }}">
+  {#- Favicon nur als PNG (loogi-mark.svg ist broken: enthaelt <image>-refs auf
+      externe Daten die nicht im File sind → rendert leer in Browser-Tabs).
+      ?v=2 als cache-bust fuer User die bereits die alte broken-SVG gecacht haben. -#}
+  <link rel="icon" type="image/png" sizes="any" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}?v=2">
+  <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}?v=2">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}?v=2">
   <link rel="manifest" href="{{ url_for('static', filename='themes/loogi/manifest.webmanifest') }}">
   <script type="module" src="{{ url_for('static', filename='sxng-core.min.js') }}" client_settings="{{ client_settings }}"></script>
   <script defer src="{{ url_for('static', filename='themes/loogi/js/loogi.js') }}"></script>
