@@ -37,4 +37,9 @@
       <input name="categories" id="selected-categories" type="hidden">
     {%- endif -%}
   </div>
+  {%- set result_count = (results or []) | length -%}
+  {%- set source_count = (timings or []) | length -%}
+  {%- if result_count or source_count -%}
+    <span class="results_meta mono">{%- if result_count %}{{ result_count }} {{ _('results') }}{% endif -%}{%- if max_response_time %}{% if result_count %} · {% endif %}{{ '%.2f'|format(max_response_time) }}s{% endif -%}{%- if source_count %} · {{ source_count }} {{ _('sources') }}{% endif -%}</span>
+  {%- endif -%}
 </div>

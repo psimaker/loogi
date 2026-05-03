@@ -145,16 +145,16 @@ body.index_endpoint #clear_search:hover { background: var(--panel-2); color: var
 /* Categories on the index page (hidden — search defaults to general) */
 body.index_endpoint #categories { display: none; }
 
-/* ───────── Results page — top bar ───────── */
+/* ───────── Results page — top bar (Designprototyp: blurred sticky) ───────── */
 body.search_endpoint main {
   display: block;
 }
 body.search_endpoint #main_results {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px 32px;
+  padding: 0 28px 32px;
 }
 #search.with_logo { display: none; }
 
@@ -162,11 +162,11 @@ body.search_endpoint #search {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: var(--bg);
-  padding: 14px 0 10px;
-  margin: 0 -24px 18px;
-  padding-left: 24px;
-  padding-right: 24px;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  backdrop-filter: saturate(140%) blur(12px);
+  padding: 14px 28px 10px;
+  margin: 0 -28px 18px;
   border-bottom: 1px solid var(--line-soft);
 }
 body.search_endpoint #search_header {
@@ -258,14 +258,24 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
 .autocomplete li:hover,
 .autocomplete li.active { background: var(--bg-2); color: var(--fg); }
 
-/* Categories tabs (results page) */
+/* Categories tabs (results page) — Designprototyp: Tabs links, Meta rechts */
 #categories {
   margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 #categories_container {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+}
+#categories .results_meta {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--fg-4);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 .category {
   position: relative;
