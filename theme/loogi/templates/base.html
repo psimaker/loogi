@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html class="no-js theme-dark" lang="{{ locale_rfc5646 }}" {% if rtl %} dir="rtl"{% endif %}>
+<head>
+  <meta charset="UTF-8">
+  <meta name="endpoint" content="{{ endpoint }}">
+  <meta name="description" content="LOOGI — privacy-respecting search">
+  <meta name="generator" content="searxng/{{ searxng_version }}">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %}{{ instance_name }}</title>
+  {% block meta %}{% endblock %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='themes/loogi/css/loogi.css') }}" type="text/css" media="screen">
+  {% if get_setting('server.limiter') or get_setting('server.public_instance') %}
+  <link rel="stylesheet" href="{{ url_for('client_token', token=link_token) }}" type="text/css">
+  {% endif %}
+  {% block head %}
+  <link title="{{ instance_name }}" type="application/opensearchdescription+xml" rel="search" href="{{ opensearch_url }}">
+  {% endblock %}
+  <link rel="icon" href="{{ url_for('static', filename='themes/loogi/img/favicon.png') }}" sizes="any">
+  <link rel="icon" href="{{ url_for('static', filename='themes/loogi/img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='themes/loogi/img/favicon.png') }}">
+  <link rel="manifest" href="{{ url_for('manifest') }}">
+  <script type="module" src="{{ url_for('static', filename='sxng-core.min.js') }}" client_settings="{{ client_settings }}"></script>
+  <script defer src="{{ url_for('static', filename='themes/loogi/js/loogi.js') }}"></script>
+</head>
+<body class="{{ endpoint }}_endpoint">
+  <main id="main_{{ self._TemplateReference__context.name|replace('loogi/', '')|replace('.html', '') }}" class="{{ body_class }}">
+    {% if errors %}
+    <div class="dialog-error" role="alert">
+      <a href="#" class="close" aria-label="close" title="close">×</a>
+      <ul>
+        {% for message in errors %}<li>{{ message }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <nav id="links_on_top">
+      {%- from 'loogi/icons.html' import icon_big -%}
+      <a href="{{ url_for('info', pagename='about') }}" class="link_on_top_about">{{ icon_big('information-circle') }}<span>{{ _('About') }}</span></a>
+      <a href="{{ url_for('preferences') }}" class="link_on_top_preferences">{{ icon_big('settings') }}<span>{{ _('Preferences') }}</span></a>
+    </nav>
+
+    {% block header %}{% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <a href="{{ url_for('info', pagename='about') }}">{{ _('About') }}</a>
+    {% if get_setting('general.privacypolicy_url') %}· <a href="{{ get_setting('general.privacypolicy_url') }}">{{ _('Privacy policy') }}</a>{% endif %}
+    {% if get_setting('general.contact_url') %}· <a href="{{ get_setting('general.contact_url') }}">{{ _('Contact instance maintainer') }}</a>{% endif %}
+    {% if enable_metrics %}· <a href="{{ url_for('stats') }}">{{ _('Engine stats') }}</a>{% endif %}
+  </footer>
+</body>
+</html>

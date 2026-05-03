@@ -1,0 +1,162 @@
+# LOOGI — SearXNG settings.
+# Wird beim Container-Build nach /etc/searxng/settings.yml kopiert.
+# Mit `use_default_settings: true` werden nur Deltas vom Upstream-Default uebernommen
+# (Deep-Merge), siehe ADR 0009.
+use_default_settings:
+  engines:
+    keep_only:
+      # general
+      - google
+      - brave
+      - duckduckgo
+      - mojeek
+      - mwmbl
+      - startpage
+      - qwant
+      - wikipedia
+
+      # images
+      - google images
+      - brave.images
+      - duckduckgo images
+      - qwant images
+      - mojeek images
+      - startpage images
+
+      # videos
+      - youtube
+      - vimeo
+      - peertube
+      - brave.videos
+      - duckduckgo videos
+      - qwant videos
+
+      # news
+      - google news
+      - brave.news
+      - duckduckgo news
+      - qwant news
+      - bing news
+      - yahoo news
+      - mojeek news
+      - startpage news
+      - reuters
+      - wikinews
+
+      # map
+      - openstreetmap
+      - apple maps
+
+      # music
+      - bandcamp
+      - soundcloud
+
+      # it / dev
+      - github
+      - github code
+      - gitlab
+      - codeberg
+      - stackoverflow
+      - mdn
+      - hackernews
+
+      # science
+      - arxiv
+      - google scholar
+      - pubmed
+      - crossref
+      - semantic scholar
+
+      # files
+      - annas archive
+
+      # wiki / reference
+      - wikidata
+      - wiktionary
+      - wikibooks
+      - wikiquote
+      - wikisource
+
+      # instant answers
+      - duckduckgo weather
+
+general:
+  instance_name: "LOOGI"
+  privacypolicy_url: false
+  donation_url: false
+  contact_url: false
+  enable_metrics: false
+
+brand:
+  new_issue_url: false
+  docs_url: https://docs.searxng.org/
+  public_instances: false
+  wiki_url: false
+  issue_url: false
+
+search:
+  safe_search: 0
+  autocomplete: "duckduckgo"
+  autocomplete_min: 3
+  default_lang: "auto"
+  ban_time_on_fail: 5
+  max_ban_time_on_fail: 120
+  formats:
+    - html
+    - json
+    - rss
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  base_url: "https://loogi.ch/"
+  secret_key: "ultrasecretkey"  # via SEARXNG_SECRET env-var ueberschrieben
+  limiter: true
+  public_instance: true
+  image_proxy: true
+  http_protocol_version: "1.1"
+  method: "POST"
+  default_http_headers:
+    X-Content-Type-Options: nosniff
+    X-Download-Options: noopen
+    X-Robots-Tag: noindex, nofollow
+    Referrer-Policy: no-referrer
+
+ui:
+  default_theme: loogi
+  query_in_title: true
+  infinite_scroll: false
+  center_alignment: false
+  default_locale: ""           # auto-detect via Accept-Language
+  search_on_category_select: true
+  hotkeys: default
+  url_formatting: pretty
+
+valkey:
+  url: valkey://valkey:6379/0
+
+outgoing:
+  request_timeout: 3.0
+  max_request_timeout: 10.0
+  pool_connections: 100
+  pool_maxsize: 20
+  enable_http2: true
+
+categories_as_tabs:
+  general:
+  images:
+  videos:
+  news:
+  map:
+  music:
+  it:
+  science:
+  files:
+
+enabled_plugins:
+  - "Hash plugin"
+  - "Self Information"
+  - "Tracker URL remover"
+  - "Unit converter plugin"
+  - "Open Access DOI rewrite"
+  - "Hostnames plugin"

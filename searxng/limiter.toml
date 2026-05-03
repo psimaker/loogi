@@ -1,0 +1,29 @@
+# LOOGI — Limiter / Bot-Detection.
+# Wird beim Container-Build nach /etc/searxng/limiter.toml kopiert.
+
+[botdetection]
+
+# /32 = exakte IPv4-Adresse, /56 = IPv6-/56-Block.
+ipv4_prefix = 32
+ipv6_prefix = 56
+
+# Reverse-Proxy laeuft via NPM auf einem Docker-Bridge-Netz (proxy-net).
+# RFC1918-Ranges abdecken, damit X-Forwarded-For aus NPM akzeptiert wird.
+trusted_proxies = [
+  '127.0.0.0/8',
+  '::1',
+  '10.0.0.0/8',
+  '172.16.0.0/12',
+  '192.168.0.0/16',
+  'fd00::/8',
+]
+
+[botdetection.ip_limit]
+filter_link_local = false
+link_token = true
+
+[botdetection.ip_lists]
+block_ip = []
+pass_ip = []
+# Wir sind nicht auf searx.space gelistet.
+pass_searxng_org = false

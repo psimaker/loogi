@@ -1,0 +1,83 @@
+# LOOGI
+
+Eigene Web-Suchmaschine fuer **loogi.ch**, gebaut auf
+[SearXNG](https://docs.searxng.org/) mit hardcoded LOOGI-Theme,
+deployed via Docker Compose hinter Nginx Proxy Manager.
+
+## Architektur in einem Satz
+
+Eigenes Docker-Image (`FROM searxng/searxng:latest`), das ein eigenes
+`loogi`-Theme (Jinja-Templates) und eine kuratierte `settings.yml`
+mitbringt. Compose orchestriert `searxng` + `valkey` (Limiter-Backend);
+TLS und Routing macht NPM extern.
+
+Hintergrund zu jeder relevanten Entscheidung:
+[`docs/adr/`](./docs/adr/README.md).
+
+## Voraussetzungen
+
+* Docker + `docker compose` v2
+* Externes Docker-Bridge-Netz `proxy-net` (wird von Nginx Proxy Manager
+  bereitgestellt)
+* Reverse-Proxy (NPM) erreichbar auf `proxy-net`
+
+## Setup
+
+```sh
+cp .env.example .env
+echo "SEARXNG_SECRET=$(openssl rand -hex 32)" >> .env
+docker compose build
+docker compose up -d
+```
+
+## NPM-Konfiguration
+
+Im Nginx Proxy Manager als neuen Proxy Host anlegen:
+
+| Feld           | Wert            |
+|----------------|-----------------|
+| Domain Names   | `loogi.ch`      |
+| Scheme         | `http`          |
+| Forward Host   | `loogi`         |
+| Forward Port   | `8080`          |
+| Block Common Exploits | aktivieren |
+| Websockets     | nicht noetig    |
+
+Unter *Custom locations / Advanced* sicherstellen, dass
+`X-Forwarded-For`, `X-Forwarded-Proto` und `X-Real-IP` an den Backend
+weitergereicht werden — sonst greift der Limiter falsch (siehe
+`searxng/limiter.toml`).
+
+SSL-Tab: Let's-Encrypt-Zertifikat anfragen, *Force SSL* + *HTTP/2 Support*
++ *HSTS Enabled* aktivieren.
+
+## Updates
+
+```sh
+docker compose pull         # zieht neuere searxng/searxng:latest
+docker compose build        # baked das LOOGI-Theme + Konfig drauf
+docker compose up -d
+```
+
+Bei Major-Updates von SearXNG die Diffs der Default-`settings.yml` und der
+`searx/templates/simple/`-Templates pruefen, falls neue Variablen oder
+Pflicht-Templates hinzugekommen sind. Siehe ADR 0002 / 0009.
+
+## Ordnerstruktur
+
+```
+.
+├── Dockerfile             # FROM searxng/searxng + COPY theme + config
+├── compose.yml            # searxng + valkey, proxy-net + searxng networks
+├── searxng/
+│   ├── settings.yml       # use_default_settings + Deltas
+│   └── limiter.toml       # trusted_proxies, link_token
+├── theme/loogi/
+│   ├── templates/         # Jinja-Templates → /usr/local/searxng/searx/templates/loogi/
+│   └── static/            # CSS, JS, Bilder → /usr/local/searxng/searx/static/themes/loogi/
+└── docs/adr/              # Architektur-Entscheidungen (MADR)
+```
+
+## Lizenz
+
+[AGPL-3.0-or-later](./LICENSE) — abgeleitet von SearXNG.

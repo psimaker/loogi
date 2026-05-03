@@ -1,0 +1,73 @@
+# LOOGI — Docker Compose
+# Reverse-Proxy/TLS extern via NPM auf proxy-net (siehe ADR 0008).
+# Keine ports: — NPM erreicht den Container ueber den Hostnamen "loogi" auf 8080.
+
+name: loogi
+
+services:
+  searxng:
+    build: .
+    image: loogi:latest
+    container_name: loogi
+    hostname: loogi
+    restart: unless-stopped
+    networks:
+      - proxy-net
+      - searxng
+    environment:
+      - SEARXNG_BASE_URL=https://loogi.ch/
+      - SEARXNG_SECRET=${SEARXNG_SECRET}
+      - INSTANCE_NAME=LOOGI
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    container_name: loogi-valkey
+    restart: unless-stopped
+    command: ["valkey-server", "--save", "30", "1", "--loglevel", "warning"]
+    networks:
+      - searxng
+    volumes:
+      - valkey-data:/data
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  proxy-net:
+    external: true
+  searxng:
+    driver: bridge
+    internal: false
+
+volumes:
+  valkey-data:
