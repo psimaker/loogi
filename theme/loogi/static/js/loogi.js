@@ -78,6 +78,36 @@
     });
   });
 
+  // Off-Canvas-Drawer fuer Filter-Sidebar (Phone). Body-Klasse drawer_open
+  // toggelt CSS-Transform (siehe loogi.css @media max-width:640px).
+  // Schliessen via: Hamburger erneut, Overlay-Tap, ESC, Resize > 640.
+  var drawerToggle = document.getElementById('drawer_toggle');
+  var drawerOverlay = document.getElementById('drawer_overlay');
+  function setDrawerOpen(open) {
+    document.body.classList.toggle('drawer_open', open);
+    if (drawerToggle) drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  if (drawerToggle) {
+    drawerToggle.addEventListener('click', function (e) {
+      e.preventDefault();
+      setDrawerOpen(!document.body.classList.contains('drawer_open'));
+    });
+  }
+  if (drawerOverlay) {
+    drawerOverlay.addEventListener('click', function () { setDrawerOpen(false); });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && document.body.classList.contains('drawer_open')) {
+      e.preventDefault();
+      setDrawerOpen(false);
+    }
+  });
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 640 && document.body.classList.contains('drawer_open')) {
+      setDrawerOpen(false);
+    }
+  });
+
   // Sources checkbox toggle (visual only — kein SearXNG-Backing)
   document.querySelectorAll('.checkbox_option').forEach(function (label) {
     label.addEventListener('click', function (e) {

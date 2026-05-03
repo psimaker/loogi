@@ -336,15 +336,9 @@ html.no-js .autocomplete,
 }
 #urls { min-width: 0; }
 
-@media (max-width: 1180px) {
-  .results_layout { padding: 0 20px; }
-  #main_column { padding: 16px 20px 0; }
-}
-@media (max-width: 880px) {
-  .results_layout { flex-direction: column; padding: 0; }
-  #filters_sidebar { width: 100% !important; border-right: 0; padding: 16px 20px; }
-  #main_column { padding: 16px 20px 0; }
-}
+/* Sub-Desktop-Layouts kommen geblockt am Ende der Datei (siehe ADR 0014):
+   - @media (max-width: 1023px) and (min-width: 641px) → Tablet (kompakt)
+   - @media (max-width: 640px)                          → Phone (Drawer-Pattern) */
 body.sidebar_collapsed #filters_sidebar { width: 56px; padding: 20px 0; }
 body.sidebar_collapsed #filters_sidebar > :not(.sidebar_header) { display: none; }
 body.sidebar_collapsed .sidebar_header .filter_label { display: none; }
@@ -889,6 +883,18 @@ main.page_with_header ul.tabs a.active {
 #drawer_toggle:hover { color: var(--fg); border-color: var(--line); }
 #drawer_toggle:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 2px; }
 
+/* ────────── Off-Canvas-Drawer Overlay (Default — sichtbar nur auf Phone) ─── */
+#drawer_overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+  z-index: 70;
+  display: none;  /* Auf Desktop/Tablet komplett aus dem Layout */
+}
+
 /* ────────── Mobile (Phone ≤ 640 px) ────────── */
 @media (max-width: 640px) {
   /* Topbar kompakt: 56 px Inhaltsraum + safe-area-inset-top fuer Notch.
@@ -912,5 +918,55 @@ main.page_with_header ul.tabs a.active {
 
   /* Hamburger sichtbar nur auf Phone */
   #drawer_toggle { display: inline-flex; }
+
+  /* ───── Filter-Sidebar als Off-Canvas-Drawer ─────
+     Drawer-Pattern dominiert auch wenn body.sidebar_collapsed gesetzt ist
+     (z.B. von einer vorherigen Tablet-Session). */
+  #filters_sidebar,
+  body.sidebar_collapsed #filters_sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(85vw, 320px);
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    z-index: 80;
+    background: var(--bg);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: calc(env(safe-area-inset-top) + 22px)
+             max(20px, env(safe-area-inset-left))
+             calc(env(safe-area-inset-bottom) + 32px)
+             max(20px, env(safe-area-inset-left));
+    border-right: 1px solid var(--line-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  /* Falls vorher sidebar_collapsed aktiv war: Inhalte wieder voll zeigen. */
+  body.sidebar_collapsed #filters_sidebar > :not(.sidebar_header) { display: revert; }
+  body.sidebar_collapsed .sidebar_header .filter_label { display: revert; }
+
+  /* Drawer offen: einfahren + body-Scroll-Lock */
+  body.drawer_open #filters_sidebar,
+  body.drawer_open.sidebar_collapsed #filters_sidebar { transform: translateX(0); }
+  body.drawer_open { overflow: hidden; }
+
+  /* Overlay aktivieren (display:none → block damit Transition greift) */
+  #drawer_overlay { display: block; }
+  body.drawer_open #drawer_overlay { opacity: 1; pointer-events: auto; }
+
+  /* Collapse-Btn in der Sidebar ist auf Phone redundant (Drawer-Pattern hat
+     eigene Close-Mechanismen: Hamburger erneut, Overlay-Tap, ESC). */
+  .sidebar_collapse_btn { display: none; }
+
+  /* Layout in der Center-Column: kein Padding rechts/links via .results_layout
+     da Drawer fixed ist und nicht mit-shiftet. Main-Column bekommt eigenes. */
+  .results_layout { padding: 0; }
+  #main_column { padding: 16px max(16px, env(safe-area-inset-right)) 0
+                          max(16px, env(safe-area-inset-left)); }
 }
 
