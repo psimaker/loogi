@@ -1,13 +1,14 @@
 {%- from 'loogi/icons.html' import icon_big -%}
 <form id="search" method="{{ method or 'POST' }}" action="{{ url_for('search') }}" role="search">
+  {#- Topbar: 60px high, padding 0 28px, flex gap 24, [Logo | SearchBox flex:1 | Lang margin-left:auto] -#}
   <div id="search_header">
     <a id="search_logo" href="{{ url_for('index') }}" tabindex="0" title="{{ _('Display the front page') }}">
-      <img src="{{ url_for('static', filename='themes/loogi/img/loogi-wordmark.png') }}" alt="LOOGI" height="45">
+      <img src="{{ url_for('static', filename='themes/loogi/img/loogi-wordmark.png') }}" alt="LOOGI" height="32">
     </a>
     <div id="search_view">
       <div class="search_box">
         <svg class="search_box_icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="q" name="q" type="text" placeholder="{{ _('Search for...') }}" tabindex="1" autocomplete="off" autocapitalize="none" spellcheck="false" autocorrect="off" dir="auto" value="{{ q or '' }}">
+        <input id="q" name="q" type="text" placeholder="{{ _('Search the web…') }}" tabindex="1" autocomplete="off" autocapitalize="none" spellcheck="false" autocorrect="off" dir="auto" value="{{ q or '' }}">
         <button id="clear_search" type="reset" aria-label="{{ _('clear') }}" class="hide_if_nojs"><span>{{ icon_big('close') }}</span><span class="show_if_nojs">{{ _('clear') }}</span></button>
         <button id="send_search" type="submit"
           {%- if search_on_category_select and selected_categories -%} name="category_{{ selected_categories[0]|replace(' ', '_') }}"{%- endif -%}
@@ -15,9 +16,11 @@
         <div class="autocomplete hide_if_nojs"><ul></ul></div>
       </div>
     </div>
-    {% set display_tooltip = true %}
-    {% include 'loogi/categories.html' %}
+    <a class="topbar_lang mono" href="{{ url_for('preferences') }}" title="{{ _('Language') }}">{{ (current_language or 'auto')[:2] | upper }}</a>
   </div>
+  {#- Tabs: 44px high, padding 0 28px, eigene border-bottom (Topbar hat keine) -#}
+  {% set display_tooltip = true %}
+  {% include 'loogi/categories.html' %}
   <input type="hidden" name="theme" value="{{ theme }}">
   {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}">{% endif %}
 </form>

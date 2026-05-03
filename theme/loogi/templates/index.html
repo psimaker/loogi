@@ -1,7 +1,7 @@
 {% extends "loogi/base.html" %}
 {% block content %}
-<div class="index">
-  <div class="title"><h1>LOOGI</h1></div>
-  {% include 'loogi/simple_search.html' %}
+<div class="logo" aria-label="LOOGI">
+  <img src="{{ url_for('static', filename='themes/loogi/img/loogi-wordmark.png') }}" alt="LOOGI" height="144">
 </div>
+{% include 'loogi/simple_search.html' %}
 {% endblock %}

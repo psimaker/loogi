@@ -76,19 +76,16 @@ body.index_endpoint #main_index {
   gap: 36px;
   width: 100%;
 }
-.index .title {
-  user-select: none;
-  display: flex;
+/* Landing-Page Logo (Designprototyp .logo). Wordmark height 144px. */
+body.index_endpoint .logo {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  user-select: none;
 }
-.index .title h1 {
-  margin: 0;
-  font-size: 0;
-  background: url('../img/loogi-wordmark.png') center/contain no-repeat;
-  width: 280px;
+body.index_endpoint .logo img {
   height: 144px;
-  text-indent: -9999px;
+  width: auto;
+  display: block;
 }
 
 /* ───────── Search box (Index — large) ───────── */
@@ -150,14 +147,15 @@ body.search_endpoint main {
   display: block;
 }
 body.search_endpoint #main_results {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 28px 32px;
+  display: block;
+  padding: 0 0 32px;
+  margin: 0;
 }
 #search.with_logo { display: none; }
 
+/* Topbar (Spec): height 60px fix, padding 0 28px, kein eigener border-bottom
+   (Tabs-Reihe darunter haelt die Linie — Spec: "Border-Linien überlappen
+   sich nicht. Wenn zwei Container Borders teilen, hat nur einer die Border"). */
 body.search_endpoint #search {
   position: sticky;
   top: 0;
@@ -165,34 +163,51 @@ body.search_endpoint #search {
   background: color-mix(in oklab, var(--bg) 92%, transparent);
   -webkit-backdrop-filter: saturate(140%) blur(12px);
   backdrop-filter: saturate(140%) blur(12px);
-  padding: 14px 28px 10px;
-  margin: 0 -28px 18px;
-  border-bottom: 1px solid var(--line-soft);
+  margin: 0 -28px 0;
 }
 body.search_endpoint #search_header {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 16px;
+  display: flex;
   align-items: center;
+  gap: 24px;
+  padding: 0 28px;
+  height: 60px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 body.search_endpoint #search_logo {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
+  flex-shrink: 0;
 }
 body.search_endpoint #search_logo img {
-  height: 45px;
+  height: 32px;
   width: auto;
   display: block;
 }
-body.search_endpoint #search_view { min-width: 0; }
+body.search_endpoint #search_view {
+  flex: 1;
+  min-width: 0;
+}
+body.search_endpoint .topbar_lang {
+  margin-left: auto;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--fg-3);
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color .12s, background .12s;
+}
+body.search_endpoint .topbar_lang:hover { color: var(--fg); background: var(--bg-2); text-decoration: none; }
 body.search_endpoint .search_box {
   position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 48px;
-  padding: 0 16px 0 18px;
+  height: 40px;
+  padding: 0 16px 0 16px;
   background: var(--bg-2);
   border: 1px solid var(--line-soft);
   border-radius: 12px;
@@ -254,17 +269,24 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
 .autocomplete li:hover,
 .autocomplete li.active { background: var(--bg-2); color: var(--fg); }
 
-/* Categories tabs (results page) — Designprototyp: Tabs links, Meta rechts */
+/* Tabs-Reihe (Spec: 44px fix, padding 0 28, border-bottom 1 line-soft).
+   Tabs gap 4, padding 0 14. Aktiv-Underline 2px accent bei bottom -1px
+   (ueberlappt die Border ohne Versatz). Meta rechts via margin-left:auto. */
 #categories {
-  margin-top: 6px;
+  border-bottom: 1px solid var(--line-soft);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 44px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 #categories_container {
   display: flex;
+  align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
+  height: 44px;
 }
 #categories .results_meta {
   margin-left: auto;
@@ -272,6 +294,7 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
   color: var(--fg-4);
   letter-spacing: 0.02em;
   white-space: nowrap;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 .category {
   position: relative;
@@ -283,90 +306,78 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
 }
 .category label,
 .category_button {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
   font-size: 13.5px;
   color: var(--fg-3);
   background: transparent;
   border: 0;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
   cursor: pointer;
   font-family: inherit;
-  transition: color .12s, border-color .12s;
+  letter-spacing: 0.005em;
+  transition: color .12s;
 }
 .category label:hover,
 .category_button:hover { color: var(--fg); }
 .category_checkbox input[type="checkbox"]:checked + label,
 .category_button.selected {
   color: var(--fg);
-  border-bottom-color: var(--accent);
+  font-weight: 500;
+}
+.category_button.selected::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.category_button .tab_icon {
+  flex-shrink: 0;
+  color: inherit;
 }
 .category_name { font-size: 13.5px; }
+.category_count {
+  font-size: 10.5px;
+  color: var(--fg-4);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 400;
+}
 .category .help { display: none; }
 
-/* Filters row */
-.search_filters {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-.search_filters select {
-  background: var(--bg-2);
-  color: var(--fg-2);
-  border: 1px solid var(--line-soft);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font: inherit;
-  font-size: 12.5px;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, var(--fg-3) 50%),
-                    linear-gradient(135deg, var(--fg-3) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
-  background-size: 5px 5px;
-  background-repeat: no-repeat;
-  padding-right: 26px;
-}
-.search_filters select:hover { color: var(--fg); border-color: var(--line); }
-.search_filters select:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
-
-/* ─────────────────────────────────────────────────────────────────────────
-   Results-Layout — pixel-perfekter Port von loogi-app.jsx App-Komponente.
-   Aussen-Flex: 240px Filter-Sidebar | 1fr Main-Block.
-   Main-Block ist selbst Flex: 1fr Center-Column | 320px Info-Sidebar.
-   ───────────────────────────────────────────────────────────────────────── */
+/* Results-Layout (Spec: max-width 1400, padding 0 28 auf Hauptzeile Main).
+   [Sidebar 240 | Center flex 1]. */
 .results_layout {
   display: flex;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  padding: 0 28px;
 }
 #main_column {
   flex: 1;
   min-width: 0;
-  display: flex;
-  gap: 36px;
-  padding: 8px 28px 0;
+  padding: 24px 28px 0;
 }
 #center_column {
-  flex: 1;
   min-width: 0;
 }
 #urls { min-width: 0; }
 
 @media (max-width: 1180px) {
-  #main_column { padding: 8px 20px 0; gap: 24px; }
-  #info_sidebar { display: none; }
+  .results_layout { padding: 0 20px; }
+  #main_column { padding: 16px 20px 0; }
 }
 @media (max-width: 880px) {
-  .results_layout { flex-direction: column; }
+  .results_layout { flex-direction: column; padding: 0; }
   #filters_sidebar { width: 100% !important; border-right: 0; padding: 16px 20px; }
-  #main_column { padding: 0 20px; }
+  #main_column { padding: 16px 20px 0; }
 }
 body.sidebar_collapsed #filters_sidebar { width: 56px; padding: 20px 0; }
 body.sidebar_collapsed #filters_sidebar > :not(.sidebar_header) { display: none; }
@@ -409,18 +420,19 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
   gap: 8px;
 }
 .filter_label {
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-4);
   font-weight: 500;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-/* RadioList — Custom Radio (Designprototyp RadioList) */
+/* RadioList — Custom Radio (Designprototyp RadioList). Spec: gap 6. */
 .radio_list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 6px;
 }
 .radio_form { margin: 0; padding: 0; }
 .radio_option {
@@ -463,11 +475,11 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
 .radio_option.selected .radio_dot { background: var(--accent); }
 .radio_label { flex: 1; }
 
-/* CheckboxList — Custom Checkbox mit Count (Designprototyp Sources) */
+/* CheckboxList — Custom Checkbox mit Count (Designprototyp Sources). Spec: gap 6. */
 .checkbox_list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 6px;
 }
 .checkbox_option {
   display: flex;
@@ -505,33 +517,33 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
 }
 
 
-/* Single result card — Designprototyp ResultItem (loogi-app.jsx) */
+/* Result-Item (Spec): padding 18px 0, flex column gap 4, border-bottom 1
+   line-soft. 3 Zeilen — URL (Mono 12 fg-3) | Title (16 fg 500) | Snippet
+   (13.5 fg-2 1.55 wrap-pretty). min-width 0 fuer Text-Children. */
 .result {
-  padding: 20px 0 22px;
+  position: relative;
+  padding: 18px 56px 18px 0;
   border-bottom: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 .result:last-child { border-bottom: 0; }
-.result h3 {
-  margin: 0 0 8px;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: -0.005em;
-}
-.result h3 a { color: var(--link); text-decoration: none; }
-.result h3 a:hover { color: var(--link); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
 .result .url_header {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-bottom: 6px;
-  color: var(--fg-2);
-  font-size: 12.5px;
+  gap: 8px;
+  color: var(--fg-3);
+  font-size: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.02em;
   text-decoration: none;
   overflow: hidden;
   white-space: nowrap;
+  min-width: 0;
 }
-.result .url_header:hover { color: var(--fg); text-decoration: none; }
+.result .url_header:hover { color: var(--fg-2); text-decoration: none; }
 .result-favicon-square {
   width: 18px;
   height: 18px;
@@ -544,76 +556,38 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
   border-radius: 4px;
   flex-shrink: 0;
   letter-spacing: 0;
+  font-family: 'Inter Tight', system-ui, sans-serif;
 }
-.result .url_wrapper { display: inline; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.result .url_wrapper { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .result .url_wrapper span { color: var(--fg-3); }
+.result h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  min-width: 0;
+}
+.result h3 a { color: var(--fg); text-decoration: none; }
+.result h3 a:hover { color: var(--fg); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
 .result .content {
-  margin: 0 0 10px;
+  margin: 0;
   color: var(--fg-2);
-  font-size: 14px;
+  font-size: 13.5px;
   line-height: 1.55;
   text-wrap: pretty;
+  min-width: 0;
 }
 .result .content.empty_element { color: var(--fg-4); font-style: italic; }
 .result .highlight { color: var(--accent); font-weight: 500; }
-
-/* Content-Meta + Engine-Liste: dot-separierte Mono-Texte (Designprototyp) */
+/* Result-Item zeigt nur 3 Zeilen (URL/Title/Snippet) — Meta + Engines weg */
 .result .published_date,
 .result .result_length,
 .result .result_views,
-.result .result_author {
-  display: inline-block;
-  margin-right: 8px;
-  font-size: 11px;
-  color: var(--fg-4);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  letter-spacing: 0.02em;
-}
-.result .engines {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex-wrap: wrap;
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--fg-4);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  letter-spacing: 0.02em;
-}
-.result .engines span {
-  background: transparent;
-  border: 0;
-  padding: 0 8px 0 0;
-  color: var(--fg-4);
-  border-radius: 0;
-  position: relative;
-}
-.result .engines span + span,
-.result .engines span + a {
-  padding-left: 8px;
-}
-.result .engines span + span::before,
-.result .engines span + a::before {
-  content: '·';
-  position: absolute;
-  left: 0;
-  color: var(--fg-4);
-}
-.result .engines .cache_link { color: var(--fg-4); display: inline-flex; align-items: center; gap: 4px; padding-left: 8px; position: relative; }
-.result .engines .cache_link::before { content: '·'; position: absolute; left: 0; color: var(--fg-4); }
-.result .engines .cache_link:hover { color: var(--fg-2); text-decoration: none; }
-.result .break { display: none; }
-.result .thumbnail {
-  float: right;
-  margin: 0 0 8px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--line-soft);
-  max-width: 200px;
-  height: auto;
-}
-.result .result_length,
-.result .result_views,
-.result .result_author { font-size: 12px; color: var(--fg-3); margin-right: 12px; }
+.result .result_author,
+.result .engines,
+.result .break,
+.result .thumbnail { display: none; }
 
 /* Image results grid */
 #urls.only_template_images,
@@ -861,85 +835,10 @@ body.page_with_header ul.tabs a.active {
 }
 .info-page strong { color: var(--fg); font-weight: 600; }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Pixel-perfect Designprototyp-Adjustments — appended in der "no-Kompromisse"-
-   Iteration. Konsolidiert Styles fuer Tabs/Categories, Result-Hover-Actions,
-   Tweaks-Panel + Pagination-Polish.
-   ───────────────────────────────────────────────────────────────────────── */
-
-/* Tabs / Categories — Designprototyp TabsRow */
-#categories {
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid var(--line-soft);
-}
-#categories_container {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  height: 44px;
-}
-.category_button {
-  position: relative;
-  height: 44px;
-  padding: 0 14px;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  color: var(--fg-3);
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 400;
-  letter-spacing: 0.005em;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: color .12s;
-}
-.category_button:hover { color: var(--fg); }
-.category_button.selected { color: var(--fg); font-weight: 500; }
-.category_button.selected::after {
-  content: '';
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: -1px;
-  height: 2px;
-  background: var(--accent);
-  border-radius: 2px;
-}
-.category_button .tab_icon {
-  flex-shrink: 0;
-  color: inherit;
-}
-.category_button .category_name { font-size: 13.5px; }
-.category_count {
-  font-size: 10.5px;
-  color: var(--fg-4);
-  font-weight: 400;
-}
-#categories .results_meta {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--fg-4);
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-/* Hide alte tooltip + checkbox-fallback rules, da nicht im design */
-.category_checkbox, .category .help { display: none; }
-
-/* ────────── Result-Item Hover-Actions (Designprototyp ResultItem) ────────── */
-.result {
-  position: relative;
-  padding-right: 56px;
-}
+/* Result-Item Hover-Actions (Designprototyp ResultItem) */
 .result_actions {
   position: absolute;
-  top: 20px;
+  top: 18px;
   right: 0;
   display: flex;
   flex-direction: column;
@@ -954,8 +853,8 @@ body.page_with_header ul.tabs a.active {
   pointer-events: auto;
 }
 .result_action {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
