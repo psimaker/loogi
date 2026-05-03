@@ -10,7 +10,6 @@
   ('news',    LOOGI_T.tab_news,   '184',   '<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M8 9h8M8 13h8M8 17h5"/>'),
   ('videos',  LOOGI_T.tab_videos, '63',    '<rect x="3" y="6" width="14" height="12" rx="2"/><path d="m17 10 4-2v8l-4-2"/>'),
   ('science', LOOGI_T.tab_papers, '47',    '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>'),
-  ('map',     LOOGI_T.tab_maps,   '',      '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>'),
 ] -%}
 <div id="categories" class="search_categories">
   <div id="categories_container">
@@ -21,7 +20,6 @@
         {%- if count %}<span class="category_count mono">{{ count }}</span>{% endif -%}
       </button>
     {%- endfor -%}
-    <input name="categories" id="selected-categories" type="hidden">
   </div>
   {%- set result_count = (results or []) | length -%}
   {%- set source_count = (timings or []) | length -%}
