@@ -99,6 +99,11 @@ search:
   default_lang: "auto"
   ban_time_on_fail: 5
   max_ban_time_on_fail: 120
+  # Favicons fuer Suchergebnisse — DuckDuckGo Resolver (privacy-respecting,
+  # konsistent mit autocomplete). Cache liegt in Valkey, wiederholte Domains
+  # treffen den Resolver nur einmal. Andere verfuegbare Resolver:
+  # allesedv | google | yandex.
+  favicon_resolver: "duckduckgo"
   formats:
     - html
     - json

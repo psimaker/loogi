@@ -5,7 +5,11 @@
     <img width="14" height="14" class="favicon" src="{{ url_for('static', filename='themes/loogi/img/icons/' + favicon + '.png') }}" alt="{{ favicon }}">
 {%- endmacro %}
 
-<!-- Result-Favicon-Square: gefaerbtes 18x18 Quadrat mit Domain-Erstbuchstabe.
+<!-- Result-Favicon-Square: 18x18 Quadrat. Wenn ein favicon_resolver
+     konfiguriert ist (settings.yml → search.favicon_resolver), wird das
+     echte Favicon ueber das farbige Letter-Square gelegt; faellt der
+     Bildaufruf um (Resolver-404 / Cache-Miss / Network), entfernt onerror
+     das img-Tag und das Letter-Square ist der Fallback.
      Hue deterministisch aus Buchstaben-Index (A=0 → 0, B=1 → 14, ...) mod 360. -->
 {%- macro favicon_square(netloc) -%}
   {%- set d = (netloc or '?') | replace('www.', '') -%}
@@ -13,7 +17,11 @@
   {%- set ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' -%}
   {%- set idx = ALPHA.split(first)[0] | length -%}
   {%- set hue = (idx * 14) % 360 -%}
-  <span class="result-favicon-square" style="background: oklch(0.55 0.13 {{ hue }})">{{ first }}</span>
+  <span class="result-favicon-square" style="background: oklch(0.55 0.13 {{ hue }})">{{ first }}
+    {%- if get_setting('search.favicon_resolver') and netloc -%}
+    <img class="result-favicon-img" src="{{ favicon_url(netloc) }}" loading="lazy" alt="" onerror="this.remove()">
+    {%- endif -%}
+  </span>
 {%- endmacro -%}
 
 {% macro result_open_link(url, classes='') -%}
