@@ -24,8 +24,10 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; height: 100%; }
+html { margin: 0; padding: 0; height: 100%; }
 body {
+  margin: 0;
+  padding: 0;
   background: var(--bg);
   color: var(--fg);
   font-family: 'Inter Tight', -apple-system, system-ui, sans-serif;
@@ -37,10 +39,11 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;     /* Fallback fuer aeltere Browser */
-  min-height: 100dvh;    /* iOS Safari: dynamic viewport behebt Address-Bar-Show/Hide-Quirk
-                            beim Scroll-End — sonst muss der User "nachziehen" um den
-                            Footer komplett ueber die wieder erscheinende Address-Bar
-                            zu schieben. */
+  min-height: 100dvh;    /* iOS Safari: dynamic viewport — passt sich an
+                            URL-Bar-Show/Hide an. */
+  /* WICHTIG: kein height:100% und kein overflow auf body — sonst wird
+     body zum eigenen Scroll-Container und iOS Safari klappt die URL-Bar
+     beim Scrollen NICHT ein. Das Window selbst muss der Scroll-Root sein. */
 }
 ::selection { background: var(--accent-soft); color: var(--fg); }
 .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
@@ -48,8 +51,11 @@ a { color: var(--link); text-decoration: none; }
 a:visited { color: inherit; }
 a:hover { text-decoration: underline; }
 
-/* Defensive: kein horizontales Scrollen, egal was Inhalte tun. */
-html, body { overflow-x: hidden; }
+/* Defensive horizontale Overflow-Schutzschicht NUR auf html (clip statt
+   hidden — clip etabliert KEINEN Scroll-Container, anders als hidden.
+   Fallback: hidden fuer Browser ohne clip-Support, modernes Safari/Chrome
+   /Firefox nutzen clip und lassen damit das Window scrollen. */
+html { overflow-x: hidden; overflow-x: clip; }
 
 /* Icons (SVGs aus icons.html, currentColor) */
 .sxng-icon-set, .sxng-icon-set-big, .sxng-icon-set-small {
@@ -1028,16 +1034,13 @@ main.page_with_header ul.tabs a.active {
     font-size: 13.5px;
   }
 
-  /* ───── Footer: zentriert, wrap, safe-area-inset-bottom ─────
-     Padding-Bottom grosszuegig (28 + safe-area), damit bei iOS-Safari-
-     Address-Bar-Show/Hide-Verhalten am Scroll-End die Footer-Links nicht
-     hinter der wieder erscheinenden Adressleiste verschwinden. */
+  /* ───── Footer: zentriert, wrap, safe-area-inset-bottom ───── */
   footer {
     flex-wrap: wrap;
     justify-content: center;
     gap: 14px;
     padding: 16px max(16px, env(safe-area-inset-right))
-             max(28px, calc(env(safe-area-inset-bottom) + 28px))
+             calc(env(safe-area-inset-bottom) + 16px)
              max(16px, env(safe-area-inset-left));
   }
   footer .spacer { display: none; }
