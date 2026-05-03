@@ -984,10 +984,16 @@ main.page_with_header ul.tabs a.active {
      4 Tabs + Counts passen nicht in 375 px Viewport. overflow-x:auto laesst
      den User horizontal scrollen, scrollbar visuell ausgeblendet (Touch-
      Inertia trotzdem aktiv). results_meta ist auf Phone redundant — Counts
-     stehen an den Tabs. */
+     stehen an den Tabs.
+     overflow-y:hidden + touch-action:pan-x verhindern dass iOS-Safari die
+     Tab-Strip auch vertikal scrollen/bouncen laesst — sonst kann der User
+     den Strip nach unten/oben "ziehen" obwohl es nichts zu sehen gibt. */
   #categories {
     padding: 0 max(12px, env(safe-area-inset-left));
     overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-y: none;
+    touch-action: pan-x;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
