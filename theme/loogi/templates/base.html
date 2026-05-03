@@ -7,28 +7,28 @@
 {%- set LOOGI_T = {
   'en': {
     'placeholder': 'Search the web…',
-    'privacy': 'Privacy', 'terms': 'Terms', 'about': 'About', 'preferences': 'Preferences', 'contact': 'Contact',
-    'lang_label': 'Language',
+    'privacy': 'Privacy', 'terms': 'Terms', 'about': 'About', 'contact': 'Contact',
+    'prev': '← Prev', 'next': 'Next →',
   },
   'de': {
     'placeholder': 'Im Web suchen…',
-    'privacy': 'Datenschutz', 'terms': 'AGB', 'about': 'Über', 'preferences': 'Einstellungen', 'contact': 'Kontakt',
-    'lang_label': 'Sprache',
+    'privacy': 'Datenschutz', 'terms': 'AGB', 'about': 'Über', 'contact': 'Kontakt',
+    'prev': '← Zurück', 'next': 'Weiter →',
   },
   'fr': {
     'placeholder': 'Rechercher sur le web…',
-    'privacy': 'Confidentialité', 'terms': 'Conditions', 'about': 'À propos', 'preferences': 'Préférences', 'contact': 'Contact',
-    'lang_label': 'Langue',
+    'privacy': 'Confidentialité', 'terms': 'Conditions', 'about': 'À propos', 'contact': 'Contact',
+    'prev': '← Préc.', 'next': 'Suiv. →',
   },
   'es': {
     'placeholder': 'Buscar en la web…',
-    'privacy': 'Privacidad', 'terms': 'Términos', 'about': 'Acerca de', 'preferences': 'Preferencias', 'contact': 'Contacto',
-    'lang_label': 'Idioma',
+    'privacy': 'Privacidad', 'terms': 'Términos', 'about': 'Acerca de', 'contact': 'Contacto',
+    'prev': '← Ant.', 'next': 'Sig. →',
   },
   'it': {
     'placeholder': 'Cerca nel web…',
-    'privacy': 'Privacy', 'terms': 'Termini', 'about': 'Informazioni', 'preferences': 'Preferenze', 'contact': 'Contatto',
-    'lang_label': 'Lingua',
+    'privacy': 'Privacy', 'terms': 'Termini', 'about': 'Informazioni', 'contact': 'Contatto',
+    'prev': '← Prec.', 'next': 'Succ. →',
   },
 }[lang2] -%}
 <!DOCTYPE html>
@@ -75,9 +75,7 @@
     <a href="{{ url_for('info', pagename='privacy', locale=lang2) }}">{{ LOOGI_T.privacy }}</a>
     <a href="{{ url_for('info', pagename='terms', locale=lang2) }}">{{ LOOGI_T.terms }}</a>
     <a href="https://github.com/psimaker" target="_blank" rel="noopener noreferrer">{{ LOOGI_T.about }}</a>
-    <a href="{{ url_for('preferences') }}">{{ LOOGI_T.preferences }}</a>
     <a href="mailto:umut.erdem@protonmail.com">{{ LOOGI_T.contact }}</a>
-    {% if enable_metrics %}<a href="{{ url_for('stats') }}">{{ _('Engine stats') }}</a>{% endif %}
   </footer>
 </body>
 </html>

@@ -192,7 +192,7 @@
         <input type="hidden" name="theme" value="{{ theme }}">
         {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}">{% endif %}
         {{- engine_data_form(engine_data) -}}
-        <button type="submit">← {{ _('Prev') }}</button>
+        <button type="submit">{{ LOOGI_T.prev }}</button>
       </form>
       {% endif %}
 
@@ -234,7 +234,7 @@
         <input type="hidden" name="theme" value="{{ theme }}">
         {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}">{% endif %}
         {{- engine_data_form(engine_data) -}}
-        <button type="submit">{{ _('Next') }} →</button>
+        <button type="submit">{{ LOOGI_T.next }}</button>
       </form>
       {%- endif -%}
     </nav>

@@ -61,8 +61,8 @@ main { flex: 1; display: flex; flex-direction: column; }
 .search_box_icon { color: var(--fg-3); flex-shrink: 0; }
 body.index_endpoint #send_search,
 body.index_endpoint #clear_search,
-body.search_endpoint #send_search,
-body.search_endpoint #clear_search { display: none; }
+body.results_endpoint #send_search,
+body.results_endpoint #clear_search { display: none; }
 
 /* ───────── Index page ───────── */
 body.index_endpoint main { align-items: center; justify-content: center; }
@@ -126,10 +126,10 @@ body.index_endpoint #q::placeholder { color: var(--fg-4); }
 body.index_endpoint #categories { display: none; }
 
 /* ───────── Results page — top bar (Designprototyp: blurred sticky) ───────── */
-body.search_endpoint main {
+body.results_endpoint main {
   display: block;
 }
-body.search_endpoint #main_results {
+body.results_endpoint #main_results {
   display: block;
   padding: 0 0 32px;
   margin: 0;
@@ -139,7 +139,7 @@ body.search_endpoint #main_results {
 /* Topbar (Spec): height 60px fix, padding 0 28px, kein eigener border-bottom
    (Tabs-Reihe darunter haelt die Linie — Spec: "Border-Linien überlappen
    sich nicht. Wenn zwei Container Borders teilen, hat nur einer die Border"). */
-body.search_endpoint #search {
+body.results_endpoint #search {
   position: sticky;
   top: 0;
   z-index: 50;
@@ -148,7 +148,7 @@ body.search_endpoint #search {
   backdrop-filter: saturate(140%) blur(12px);
   margin: 0 -28px 0;
 }
-body.search_endpoint #search_header {
+body.results_endpoint #search_header {
   display: flex;
   align-items: center;
   gap: 24px;
@@ -157,34 +157,22 @@ body.search_endpoint #search_header {
   max-width: 1400px;
   margin: 0 auto;
 }
-body.search_endpoint #search_logo {
+body.results_endpoint #search_logo {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
   flex-shrink: 0;
 }
-body.search_endpoint #search_logo img {
+body.results_endpoint #search_logo img {
   height: 32px;
   width: auto;
   display: block;
 }
-body.search_endpoint #search_view {
+body.results_endpoint #search_view {
   flex: 1;
   min-width: 0;
 }
-body.search_endpoint .topbar_lang {
-  margin-left: auto;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--fg-3);
-  padding: 4px 8px;
-  border-radius: 6px;
-  text-decoration: none;
-  flex-shrink: 0;
-  transition: color .12s, background .12s;
-}
-body.search_endpoint .topbar_lang:hover { color: var(--fg); background: var(--bg-2); text-decoration: none; }
-body.search_endpoint .search_box {
+body.results_endpoint .search_box {
   position: relative;
   display: flex;
   align-items: center;
@@ -197,11 +185,11 @@ body.search_endpoint .search_box {
   max-width: 720px;
   transition: border-color .15s, box-shadow .15s;
 }
-body.search_endpoint .search_box:focus-within {
+body.results_endpoint .search_box:focus-within {
   border-color: var(--accent-line);
   box-shadow: 0 0 0 4px var(--accent-soft);
 }
-body.search_endpoint #q {
+body.results_endpoint #q {
   flex: 1;
   min-width: 0;
   background: transparent;
@@ -643,32 +631,7 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
 }
 #corrections input[type="submit"]:hover { color: var(--fg); border-color: var(--accent-line); background: var(--accent-soft); }
 
-/* Pagination */
-#pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin: 32px 0 8px;
-  flex-wrap: wrap;
-}
-#pagination form { margin: 0; display: inline; }
-#pagination button,
-#pagination input[type="submit"],
-#pagination input[type="button"] {
-  background: var(--bg-2);
-  color: var(--fg-2);
-  border: 1px solid var(--line-soft);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  min-width: 36px;
-}
-#pagination button:hover,
-#pagination input[type="submit"]:hover { color: var(--fg); background: var(--panel); border-color: var(--line); }
-#pagination .page_number_current { color: var(--fg); background: var(--accent-soft); border-color: var(--accent-line); cursor: default; }
+/* Pagination — siehe Block weiter unten (Designprototyp PageBtn). */
 
 /* Footer — flex, rechts-ausgerichtet via .spacer (Designprototyp LOOGI.html) */
 footer {
@@ -741,24 +704,24 @@ body.preferences_endpoint #main_preferences {
 .preferences_back a:hover { color: var(--fg); background: var(--panel); text-decoration: none; }
 
 /* About / Info pages (Markdown-rendered: privacy, terms, about, search-syntax) */
-body.page_with_header #page_logo {
+main.page_with_header #page_logo {
   display: block;
   padding: 22px 0 12px;
   text-align: center;
 }
-body.page_with_header #page_logo img {
+main.page_with_header #page_logo img {
   height: 56px;
   width: auto;
   display: inline-block;
 }
 body.info_endpoint main,
-body.page_with_header main {
+main.page_with_header {
   max-width: 760px;
   margin: 0 auto;
   padding: 0 24px 48px;
 }
 body.info_endpoint ul.tabs,
-body.page_with_header ul.tabs {
+main.page_with_header ul.tabs {
   list-style: none;
   padding: 0;
   margin: 8px 0 24px;
@@ -768,9 +731,9 @@ body.page_with_header ul.tabs {
   border-bottom: 1px solid var(--line-soft);
 }
 body.info_endpoint ul.tabs li,
-body.page_with_header ul.tabs li { margin: 0; }
+main.page_with_header ul.tabs li { margin: 0; }
 body.info_endpoint ul.tabs a,
-body.page_with_header ul.tabs a {
+main.page_with_header ul.tabs a {
   display: inline-block;
   padding: 8px 14px;
   font-size: 13.5px;
@@ -781,9 +744,9 @@ body.page_with_header ul.tabs a {
   margin-bottom: -1px;
 }
 body.info_endpoint ul.tabs a:hover,
-body.page_with_header ul.tabs a:hover { color: var(--fg); }
+main.page_with_header ul.tabs a:hover { color: var(--fg); }
 body.info_endpoint ul.tabs a.active,
-body.page_with_header ul.tabs a.active {
+main.page_with_header ul.tabs a.active {
   color: var(--fg);
   border-bottom-color: var(--accent);
 }
@@ -866,6 +829,8 @@ body.page_with_header ul.tabs a.active {
 #pagination .page_number_current,
 #pagination input[type="submit"],
 #pagination input[type="button"] {
+  appearance: none;
+  -webkit-appearance: none;
   min-width: 36px;
   height: 32px;
   padding: 0 12px;
@@ -875,6 +840,8 @@ body.page_with_header ul.tabs a.active {
   border-radius: 6px;
   font: inherit;
   font-size: 13px;
+  line-height: 30px;
+  text-align: center;
   cursor: pointer;
   display: inline-flex;
   align-items: center;

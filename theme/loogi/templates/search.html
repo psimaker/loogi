@@ -16,7 +16,6 @@
         <div class="autocomplete hide_if_nojs"><ul></ul></div>
       </div>
     </div>
-    <a class="topbar_lang mono" href="{{ url_for('preferences') }}" title="{{ LOOGI_T.lang_label if LOOGI_T else 'Language' }}">{{ (lang2 if lang2 else 'en') | upper }}</a>
   </div>
   {#- Tabs: 44px high, padding 0 28px, eigene border-bottom (Topbar hat keine) -#}
   {% set display_tooltip = true %}
