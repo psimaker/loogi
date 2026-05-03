@@ -967,10 +967,13 @@ main.page_with_header ul.tabs a.active {
   body.sidebar_collapsed #filters_sidebar > :not(.sidebar_header) { display: revert; }
   body.sidebar_collapsed .sidebar_header .filter_label { display: revert; }
 
-  /* Drawer offen: einfahren + body-Scroll-Lock */
+  /* Drawer offen: einfahren. Body-Scroll-Lock kommt aus JS via
+     position:fixed + top:-scrollY (siehe loogi.js setDrawerOpen) — NICHT
+     via CSS overflow:hidden, weil das auf iOS Safari einen Scroll-Container-
+     Wechsel triggert und nach dem Schliessen einen visuellen Restbalken
+     am Bottom hinterlassen kann. */
   body.drawer_open #filters_sidebar,
   body.drawer_open.sidebar_collapsed #filters_sidebar { transform: translateX(0); }
-  body.drawer_open { overflow: hidden; }
 
   /* Overlay aktivieren (display:none → block damit Transition greift) */
   #drawer_overlay { display: block; }
