@@ -1,10 +1,9 @@
 // LOOGI client-side behaviour.
 // - Cmd/Ctrl-K fokussiert die Suche.
 // - Back-to-top sichtbar ab 600px Scroll.
-// - Tweaks-Panel: Density (compact/comfortable/spacious) + Accent
-//   (teal/amber/magenta/lime) live via CSS-Variablen auf :root + body class.
-//   State wird in localStorage persistent gemacht.
-// - AISummary "Hide"-Button blendet das Banner pro Session aus.
+// - Sidebar-Collapse-Persistenz via localStorage.
+// - Region/Sources Click-Toggle (visual-only — Designprototyp-Komponenten
+//   ohne SearXNG-Backing).
 (function () {
   'use strict';
 
@@ -36,75 +35,6 @@
       });
     }
   }
-
-  // ── Tweaks panel ─────────────────────────────────────────────────────────
-  var ACCENTS = {
-    teal:    ['oklch(0.80 0.105 195)', 'oklch(0.80 0.105 195 / 0.14)', 'oklch(0.80 0.105 195 / 0.35)'],
-    amber:   ['oklch(0.80 0.13 78)',   'oklch(0.80 0.13 78 / 0.14)',   'oklch(0.80 0.13 78 / 0.35)'],
-    magenta: ['oklch(0.74 0.16 340)',  'oklch(0.74 0.16 340 / 0.14)',  'oklch(0.74 0.16 340 / 0.35)'],
-    lime:    ['oklch(0.86 0.16 130)',  'oklch(0.86 0.16 130 / 0.14)',  'oklch(0.86 0.16 130 / 0.35)'],
-  };
-
-  function applyAccent(name) {
-    var a = ACCENTS[name] || ACCENTS.teal;
-    var root = document.documentElement;
-    root.style.setProperty('--accent', a[0]);
-    root.style.setProperty('--accent-soft', a[1]);
-    root.style.setProperty('--accent-line', a[2]);
-    try { localStorage.setItem('loogi_accent', name); } catch (_) {}
-  }
-
-  function applyDensity(name) {
-    var body = document.body;
-    body.classList.remove('density_compact', 'density_comfortable', 'density_spacious');
-    body.classList.add('density_' + name);
-    try { localStorage.setItem('loogi_density', name); } catch (_) {}
-  }
-
-  function setActiveSeg(seg, value) {
-    var btns = seg.querySelectorAll('button');
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].classList.toggle('active', btns[i].getAttribute('data-value') === value);
-    }
-  }
-
-  // Restore on load
-  try {
-    var savedAccent = localStorage.getItem('loogi_accent');
-    if (savedAccent && ACCENTS[savedAccent]) applyAccent(savedAccent);
-    var savedDensity = localStorage.getItem('loogi_density');
-    if (savedDensity) applyDensity(savedDensity);
-  } catch (_) {}
-
-  // Wire up panel
-  var panel = document.getElementById('tweaks_panel');
-  if (panel) {
-    var segs = panel.querySelectorAll('.tweaks_seg');
-    segs.forEach(function (seg) {
-      var tweak = seg.getAttribute('data-tweak');
-      // Reflect persisted value in segments
-      try {
-        var saved = localStorage.getItem('loogi_' + tweak);
-        if (saved) setActiveSeg(seg, saved);
-      } catch (_) {}
-      seg.addEventListener('click', function (e) {
-        var btn = e.target.closest('button[data-value]');
-        if (!btn) return;
-        var value = btn.getAttribute('data-value');
-        setActiveSeg(seg, value);
-        if (tweak === 'accent') applyAccent(value);
-        if (tweak === 'density') applyDensity(value);
-      });
-    });
-  }
-
-  // AISummary hide
-  document.querySelectorAll('.aisummary_action_dismiss').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var card = btn.closest('.aisummary');
-      if (card) card.style.display = 'none';
-    });
-  });
 
   // Filter-Sidebar collapse persistence
   try {

@@ -20,12 +20,12 @@
 
 {#-
   =============================================================================
-  Results-Layout — pixel-perfekter Port von loogi-app.jsx App-Komponente.
-  Aussen-Flex: [240px Filter-Sidebar | 1fr Main-Block].
-  Main-Block ist selbst Flex: [1fr Center-Column | 320px Info-Sidebar].
-  Komponenten ohne SearXNG-Backing (Region, Sources, AISummary-Generator,
-  Source-Mix-Klassifikation, Related-Searches als Designdaten) sind mit
-  Mock-Werten aus loogi-search-design/project/loogi-data.jsx befuellt.
+  Results-Layout — pixel-perfekter Port von loogi-app.jsx App-Komponente
+  (LOOGI - Search/loogi-app.jsx, ueberarbeitete Version vom 2026-05-03):
+  Aussen-Flex `[240px Filter-Sidebar | 1fr Main-Block]`, Main-Block hat in
+  dieser Designversion nur eine Center-Column (FilterChips, AISummary,
+  InfoColumn und floating Tweaks-Panel sind in der ueberarbeiteten
+  Designvorlage entfernt worden).
   =============================================================================
 -#}
 <div class="results_layout">
@@ -39,7 +39,7 @@
     </button>
   </div>
 
-  {#- Time-Range RadioList -#}
+  {#- Time RadioList -#}
   <div class="filter_section">
     <span class="filter_label mono">{{ _('Time') }}</span>
     <div class="radio_list">
@@ -65,7 +65,7 @@
     </div>
   </div>
 
-  {#- Language RadioList — Designprototyp zeigt 5 Optionen (statt 100+ SearXNG-Locales) -#}
+  {#- Language RadioList — 5 Optionen aus Designprototyp -#}
   <div class="filter_section">
     <span class="filter_label mono">{{ _('Language') }}</span>
     <div class="radio_list">
@@ -91,7 +91,7 @@
     </div>
   </div>
 
-  {#- Region RadioList — Mock-only, kein SearXNG-Backing, visuell 1:1 zum Design -#}
+  {#- Region RadioList — visual-only Mock (kein SearXNG-Backing) -#}
   <div class="filter_section">
     <span class="filter_label mono">{{ _('Region') }}</span>
     <div class="radio_list">
@@ -104,7 +104,7 @@
     </div>
   </div>
 
-  {#- Sources Checkboxes — Mock-only mit Designprototyp-Counts (LOOGI_SOURCES) -#}
+  {#- Sources Checkboxes — visual-only Mock mit LOOGI_SOURCES-counts -#}
   <div class="filter_section">
     <span class="filter_label mono">{{ _('Sources') }}</span>
     <div class="checkbox_list">
@@ -127,7 +127,7 @@
     </div>
   </div>
 
-  {#- Safe Search RadioList -#}
+  {#- SafeSearch RadioList -#}
   <div class="filter_section">
     <span class="filter_label mono">{{ _('Safe search') }}</span>
     <div class="radio_list">
@@ -152,70 +152,16 @@
   </div>
 </aside>
 
-{#- ────────── Main-Block (Center + Info) ────────── -#}
+{#- ────────── Center-Column (Designprototyp main: 1fr) ────────── -#}
 <div id="main_column">
-
 <div id="center_column">
 
-  {#- ────────── FilterChips-Reihe ────────── -#}
-  {%- set chips = [] -%}
-  {%- if time_range and time_range != '' -%}
-    {%- set _ = chips.append({'k': 'time', 'label': time_range, 'reset_url': url_for('search') ~ '?q=' ~ (q|urlencode) ~ '&time_range='}) -%}
-  {%- endif -%}
-  {%- if current_language and current_language not in ('all', 'auto') -%}
-    {%- set _ = chips.append({'k': 'lang', 'label': current_language, 'reset_url': url_for('search') ~ '?q=' ~ (q|urlencode) ~ '&language=auto'}) -%}
-  {%- endif -%}
-  {%- if safesearch and safesearch|string != '0' -%}
-    {%- set _ = chips.append({'k': 'safe', 'label': 'SafeSearch: ' ~ (safesearch|string), 'reset_url': url_for('search') ~ '?q=' ~ (q|urlencode) ~ '&safesearch=0'}) -%}
-  {%- endif -%}
-  {%- set sugg_chips = (suggestions or [])[:4] -%}
-  {%- if chips or sugg_chips -%}
-  <div class="filter_chips">
-    {%- for c in chips -%}
-      <span class="chip chip_active">
-        {{ c.label }}
-        <a class="chip_close" href="{{ c.reset_url }}" aria-label="remove filter">×</a>
-      </span>
-    {%- endfor -%}
-    {%- if chips and sugg_chips -%}<span class="chip_divider"></span>{%- endif -%}
-    {%- for s in sugg_chips -%}
-      <form method="POST" action="{{ url_for('search') }}" class="chip_form">
-        <input type="hidden" name="q" value="{{ s.url if s.url else s }}">
-        {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
-        <input type="hidden" name="language" value="{{ current_language }}">
-        <input type="hidden" name="time_range" value="{{ time_range }}">
-        <input type="hidden" name="safesearch" value="{{ safesearch }}">
-        <input type="hidden" name="theme" value="{{ theme }}">
-        <button type="submit" class="chip chip_suggestion">{{ s.title if s.title else s }}</button>
-      </form>
-    {%- endfor -%}
-  </div>
-  {%- endif -%}
+  {#- Answers ueber den Ergebnissen — wird im Designprototyp nicht ausgewiesen,
+      bleibt aber als SearXNG-default-Ausgabe (Calculator etc.) erhalten. -#}
+  {%- if answers -%}
+    {%- include 'loogi/elements/answers.html' -%}
+  {%- endif %}
 
-  {#- ────────── AISummary-Banner — Designprototyp AISummary ────────── -#}
-  <div class="aisummary">
-    <span class="aisummary_logo mono">L</span>
-    <div class="aisummary_body">
-      <div class="aisummary_meta">
-        <span class="mono aisummary_label">{{ _('Loogi summary') }}</span>
-        <span class="mono aisummary_provenance">· {{ _('drawn from') }} {{ (timings or []) | length or 6 }} {{ _('sources') }}{% if max_response_time %}, {{ '%.2f'|format(max_response_time) }}s{% endif %}</span>
-      </div>
-      <p class="aisummary_text">
-        {%- if answers -%}
-          {%- for answer in answers -%}{{ answer.answer if answer.answer is defined else answer }}{% if not loop.last %} · {% endif %}{%- endfor -%}
-        {%- else -%}
-          {{ _('No automated summary for this query yet — Loogi shows the underlying sources directly. Refine your query or browse the results below for primary material.') }}
-        {%- endif -%}
-      </p>
-      <div class="aisummary_actions">
-        <button type="button" class="aisummary_action">{{ _('Show citations') }}</button>
-        <button type="button" class="aisummary_action">{{ _('Ask a follow-up') }}</button>
-        <button type="button" class="aisummary_action aisummary_action_dismiss">{{ _('Hide') }}</button>
-      </div>
-    </div>
-  </div>
-
-  {#- ────────── Ergebnisliste ────────── -#}
   <div id="results" class="{{ only_template }}">
     <div id="urls" role="main">
       {%- if corrections -%}
@@ -296,119 +242,6 @@
   </div>
 
 </div> {#- /#center_column -#}
-
-{#- ────────── InfoColumn (RECHTS, 320 px) ────────── -#}
-<aside id="info_sidebar">
-
-  {#- InfoCard — SearXNG-Infobox falls vorhanden, sonst Designprototyp-Mock -#}
-  {%- set first_infobox = (infoboxes or [None])[0] -%}
-  <div class="info_card info_card_main">
-    <div class="info_card_image">
-      {%- if first_infobox and first_infobox.img_src -%}
-        <img src="{{ image_proxify(first_infobox.img_src) }}" alt="{{ first_infobox.infobox|striptags }}">
-      {%- endif -%}
-      <span class="info_card_label_inset mono">{{ _('overview') }}</span>
-      <span class="info_card_dot"></span>
-    </div>
-    <div class="info_card_body">
-      <div class="info_card_kind mono">{{ _('Reference') }}</div>
-      <h2 class="info_card_title">{{ first_infobox.infobox if first_infobox else (q|e) }}</h2>
-      <p class="info_card_summary">
-        {%- if first_infobox and first_infobox.content -%}
-          {{ first_infobox.content | striptags | safe }}
-        {%- else -%}
-          {{ _('Loogi gathers results from independent search engines without tracking. Use the filters on the left to narrow the result set, or open one of the references below to dive in.') }}
-        {%- endif -%}
-      </p>
-      <div class="info_card_divider"></div>
-      <dl class="info_card_facts">
-        {%- if first_infobox and first_infobox.attributes -%}
-          {%- for attr in first_infobox.attributes[:5] -%}
-            <dt>{{ attr.label }}</dt>
-            <dd>{{ attr.value if attr.value is defined else attr.image.alt if attr.image else '' }}</dd>
-          {%- endfor -%}
-        {%- else -%}
-          <dt>{{ _('Engines used') }}</dt><dd>{{ (timings or []) | length }}</dd>
-          <dt>{{ _('Response') }}</dt><dd>{% if max_response_time %}{{ '%.2f'|format(max_response_time) }}s{% else %}—{% endif %}</dd>
-          <dt>{{ _('Tracking') }}</dt><dd>{{ _('none') }}</dd>
-          <dt>{{ _('Ads') }}</dt><dd>{{ _('none') }}</dd>
-        {%- endif -%}
-      </dl>
-      <div class="info_card_related">
-        {%- if first_infobox and first_infobox.relatedTopics -%}
-          {%- for topic in first_infobox.relatedTopics[:6] -%}
-            <a href="{{ url_for('search') }}?q={{ topic.name|urlencode }}&category_general=1" class="info_card_related_tag">{{ topic.name }}</a>
-          {%- endfor -%}
-        {%- else -%}
-          {%- for tag in ['privacy', 'open source', 'no tracking', 'self-hosted'] -%}
-            <span class="info_card_related_tag">{{ _(tag) }}</span>
-          {%- endfor -%}
-        {%- endif -%}
-      </div>
-    </div>
-  </div>
-
-  {#- People also search — SearXNG suggestions, sonst LOOGI_RELATED Mock -#}
-  <div class="info_card info_card_related_card">
-    <div class="info_card_label mono">{{ _('People also search') }}</div>
-    <div class="info_card_link_list">
-      {%- set related_items = (suggestions or [])[:6] -%}
-      {%- if related_items -%}
-        {%- for s in related_items -%}
-          <form method="POST" action="{{ url_for('search') }}" class="info_card_link_form">
-            <input type="hidden" name="q" value="{{ s.url if s.url else s }}">
-            {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
-            <input type="hidden" name="theme" value="{{ theme }}">
-            <button type="submit" class="info_card_link">
-              <span>{{ s.title if s.title else s }}</span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </button>
-          </form>
-        {%- endfor -%}
-      {%- else -%}
-        {%- for label in ['Privacy-respecting search', 'Self-hosted alternatives', 'Open source web search', 'Search engines comparison', 'Decentralised search', 'No-tracking browsers'] -%}
-          <form method="POST" action="{{ url_for('search') }}" class="info_card_link_form">
-            <input type="hidden" name="q" value="{{ label }}">
-            <input type="hidden" name="category_general" value="1">
-            <input type="hidden" name="theme" value="{{ theme }}">
-            <button type="submit" class="info_card_link">
-              <span>{{ _(label) }}</span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </button>
-          </form>
-        {%- endfor -%}
-      {%- endif -%}
-    </div>
-  </div>
-
-  {#- Source-Mix — aus engine timings gruppiert nach kategorie wenn moeglich,
-      sonst Designprototyp-Mock-Verteilung (LOOGI Source-Mix) -#}
-  <div class="info_card info_card_sourcemix">
-    <div class="info_card_sourcemix_header">
-      <span class="info_card_label mono">{{ _('Source mix') }}</span>
-      <span class="mono info_card_sourcemix_meta">{{ _('this query') }}</span>
-    </div>
-    {%- set source_bars = [
-      ('Academic', 32, true),
-      ('News', 26, false),
-      ('Blogs', 21, false),
-      ('Code', 12, false),
-      ('Other', 9, false),
-    ] -%}
-    <div class="info_card_sourcemix_bars">
-      {%- for label, pct, accent in source_bars -%}
-        <div class="sourcemix_row">
-          <span class="sourcemix_label">{{ _(label) }}</span>
-          <div class="sourcemix_bar"><div class="sourcemix_bar_fill{% if accent %} accent{% endif %}" style="width: {{ pct }}%"></div></div>
-          <span class="mono sourcemix_pct">{{ pct }}%</span>
-        </div>
-      {%- endfor -%}
-    </div>
-    <div class="mono info_card_sourcemix_footer">{{ _('No tracking · no ads') }}{% if max_response_time %} · {{ '%.2f'|format(max_response_time) }}s{% endif %}</div>
-  </div>
-
-</aside>
-
 </div> {#- /#main_column -#}
 
 </div> {#- /.results_layout -#}
@@ -417,30 +250,4 @@
 <div id="backToTop">
   <a href="#" aria-label="{{ _('Back to top') }}">{{ icon_small('navigate-up') }}</a>
 </div>
-
-{#- ────────── Floating Tweaks-Panel (Designprototyp LoogiTweaksPanel) ────────── -#}
-<div id="tweaks_panel" hidden>
-  <div class="tweaks_panel_header">
-    <strong>Tweaks</strong>
-    <button type="button" class="tweaks_panel_close" aria-label="Close" onclick="document.getElementById('tweaks_panel').setAttribute('hidden','')">×</button>
-  </div>
-  <div class="tweaks_panel_body">
-    <div class="tweaks_section_label">Layout</div>
-    <div class="tweaks_seg" data-tweak="density">
-      <button type="button" data-value="compact">Compact</button>
-      <button type="button" data-value="comfortable" class="active">Default</button>
-      <button type="button" data-value="spacious">Spacious</button>
-    </div>
-    <div class="tweaks_section_label">Accent</div>
-    <div class="tweaks_seg" data-tweak="accent">
-      <button type="button" data-value="teal" class="active">Teal</button>
-      <button type="button" data-value="amber">Amber</button>
-      <button type="button" data-value="magenta">Magenta</button>
-      <button type="button" data-value="lime">Lime</button>
-    </div>
-  </div>
-</div>
-<button type="button" id="tweaks_panel_toggle" aria-label="Open tweaks" onclick="document.getElementById('tweaks_panel').removeAttribute('hidden')">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-</button>
 {% endblock %}

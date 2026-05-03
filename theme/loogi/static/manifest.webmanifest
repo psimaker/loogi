@@ -3,7 +3,7 @@
   "short_name": "LOOGI",
   "icons": [
     {
-      "src": "/static/themes/loogi/img/favicon.svg",
+      "src": "/static/themes/loogi/img/loogi-mark.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     },
