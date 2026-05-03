@@ -12,8 +12,9 @@ services:
     hostname: loogi
     restart: unless-stopped
     networks:
-      - proxy-net
-      - searxng
+      - proxy-net          # eingehender Web-Traffic via NPM (TLS terminiert dort)
+      - loogi-net          # lokale Service-Konsumenten (crawl4ai etc.) — IP-Limit-Bypass via pass_ip
+      - loogi-internal     # Valkey-Backend
     environment:
       - SEARXNG_BASE_URL=https://loogi.ch/
       - SEARXNG_SECRET=${SEARXNG_SECRET}
@@ -42,7 +43,7 @@ services:
     restart: unless-stopped
     command: ["valkey-server", "--save", "30", "1", "--loglevel", "warning"]
     networks:
-      - searxng
+      - loogi-internal
     volumes:
       - valkey-data:/data
     cap_drop:
@@ -63,11 +64,23 @@ services:
         max-file: "3"
 
 networks:
+  # NPM-Eingangsnetz, vom Reverse-Proxy bereitgestellt.
   proxy-net:
     external: true
-  searxng:
+
+  # Bypass-Netz fuer lokale Service-Konsumenten (z. B. crawl4ai).
+  # Vor dem ersten "compose up" anlegen mit:
+  #   docker network create --subnet=172.30.0.0/24 loogi-net
+  # Andere Compose-Stacks joinen via:
+  #   networks: { loogi-net: { external: true } }
+  loogi-net:
+    external: true
+
+  # Reines Backend-Netz fuer valkey. internal=true ⇒ kein Internet-Zugang
+  # fuer Container hier drin (valkey braucht keinen).
+  loogi-internal:
     driver: bridge
-    internal: false
+    internal: true
 
 volumes:
   valkey-data:

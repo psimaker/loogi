@@ -19,6 +19,12 @@ Hintergrund zu jeder relevanten Entscheidung:
 * Docker + `docker compose` v2
 * Externes Docker-Bridge-Netz `proxy-net` (wird von Nginx Proxy Manager
   bereitgestellt)
+* Externes Netz `loogi-net` mit fixem Subnet `172.30.0.0/24` (siehe
+  [ADR 0012](./docs/adr/0012-bypass-netz-fuer-lokale-clients.md)) —
+  einmalig anlegen mit:
+  ```sh
+  docker network create --subnet=172.30.0.0/24 loogi-net
+  ```
 * Reverse-Proxy (NPM) erreichbar auf `proxy-net`
 
 ## Setup
@@ -28,6 +34,31 @@ cp .env.example .env
 echo "SEARXNG_SECRET=$(openssl rand -hex 32)" >> .env
 docker compose build
 docker compose up -d
+```
+
+## Lokale Service-Konsumenten (crawl4ai etc.) anbinden
+
+Andere Stacks auf demselben Host, die LOOGI als Such-Backend nutzen wollen,
+hängen sich an `loogi-net` ein — sie umgehen damit Bot-Detection und
+Rate-Limit (per `pass_ip` in `searxng/limiter.toml`):
+
+```yaml
+# Beispiel: crawl4ai/compose.yml
+services:
+  crawl4ai:
+    # ...
+    networks:
+      - default
+      - loogi-net   # gibt Zugriff auf http://loogi:8080 ohne Limits
+
+networks:
+  loogi-net:
+    external: true
+```
+
+JSON-API-Aufruf vom Konsumenten:
+```
+http://loogi:8080/search?q=test&format=json
 ```
 
 ## NPM-Konfiguration

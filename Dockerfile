@@ -13,8 +13,9 @@ COPY --chown=searxng:searxng theme/loogi/static/    /usr/local/searxng/searx/sta
 COPY --chown=searxng:searxng searxng/settings.yml   /etc/searxng/settings.yml
 COPY --chown=searxng:searxng searxng/limiter.toml   /etc/searxng/limiter.toml
 
-# Eigene Info-Pages (privacy, terms) zusaetzlich zu den SearXNG-Defaults
-# (about, search-syntax, donate). Pro Sprache eigenes Unterverzeichnis.
+# Eigene Info-Pages (privacy, terms). Pro Sprache eigenes Unterverzeichnis.
+# Wir wollen NUR diese Pages — siehe RUN-Block unten, der die SearXNG-Defaults
+# (about, search-syntax, donate) und nicht-unterstuetzte Sprachen entfernt.
 COPY --chown=searxng:searxng searxng/infopage/      /usr/local/searxng/searx/infopage/
 
 # Patch: privacy + terms zur InfoPageSet.toc hinzufuegen, damit /info/<locale>/privacy
@@ -29,4 +30,26 @@ RUN INFOPAGE=/usr/local/searxng/searx/infopage/__init__.py && \
     grep -q "'privacy'," "$INFOPAGE" && \
     grep -q "'terms'," "$INFOPAGE" && \
     rm -rf /usr/local/searxng/searx/infopage/__pycache__
+
+# SearXNG-Default-Infopages und nicht unterstuetzte Sprachen entfernen.
+# Wir verlinken nirgends auf about/search-syntax/donate; das LOOGI-About-Link
+# zeigt auf https://github.com/psimaker (siehe base.html).
+# Nicht unterstuetzte Sprachen (fa_IR, id) wuerden sonst in InfoPageSet.locales
+# auftauchen und Tabs in info-Pages dafuer rendern.
+RUN find /usr/local/searxng/searx/infopage -type f \
+        \( -name 'about.md' -o -name 'search-syntax.md' -o -name 'donate.md' \) \
+        -delete && \
+    rm -rf /usr/local/searxng/searx/infopage/fa_IR \
+           /usr/local/searxng/searx/infopage/id && \
+    test -f /usr/local/searxng/searx/infopage/en/privacy.md && \
+    test -f /usr/local/searxng/searx/infopage/de/terms.md && \
+    ! test -f /usr/local/searxng/searx/infopage/en/about.md
+
+# tor_check-Plugin hat ein hardcoded "SearXNG" in der Description, das auf
+# der /preferences-Seite sichtbar wird. Ersetzen durch "LOOGI" und pyc cleanen.
+RUN TOR_PLUGIN=/usr/local/searxng/searx/plugins/tor_check.py && \
+    grep -q "but from SearXNG" "$TOR_PLUGIN" && \
+    sed -i "s|but from SearXNG|but from LOOGI|" "$TOR_PLUGIN" && \
+    grep -q "but from LOOGI" "$TOR_PLUGIN" && \
+    rm -rf /usr/local/searxng/searx/plugins/__pycache__
 USER searxng

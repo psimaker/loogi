@@ -9,6 +9,9 @@ ipv6_prefix = 56
 
 # Reverse-Proxy laeuft via NPM auf einem Docker-Bridge-Netz (proxy-net).
 # RFC1918-Ranges abdecken, damit X-Forwarded-For aus NPM akzeptiert wird.
+# (Sicherheitshinweis: Wer in einem dieser Subnets sitzt, kann
+# X-Forwarded-For spoofen — was OK ist, da das nur Container im selben
+# Docker-Host trifft, also ohnehin Root-Vertrauen besteht.)
 trusted_proxies = [
   '127.0.0.0/8',
   '::1',
@@ -24,6 +27,16 @@ link_token = true
 
 [botdetection.ip_lists]
 block_ip = []
-pass_ip = []
+
+# IPs/Subnets, die vom Bot-Detector und Rate-Limiter komplett gebypassed
+# werden (siehe ADR 0012). Das loogi-net (compose.yml) hat fixes Subnet
+# 172.30.0.0/24 — lokale Service-Konsumenten (crawl4ai etc.) joinen dort
+# und sind unbeschraenkt.
+pass_ip = [
+  '172.30.0.0/24',
+  '127.0.0.0/8',
+  '::1',
+]
+
 # Wir sind nicht auf searx.space gelistet.
 pass_searxng_org = false
