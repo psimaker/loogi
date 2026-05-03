@@ -16,6 +16,7 @@
     'opt_all_lang': 'All languages',
     'opt_safe_strict': 'Strict', 'opt_safe_moderate': 'Moderate', 'opt_safe_off': 'Off',
     'open_new_tab': 'Open in new tab', 'hide_domain': 'Hide domain',
+    'menu': 'Menu', 'close_menu': 'Close menu',
   },
   'de': {
     'placeholder': 'Im Web suchen…',
@@ -28,6 +29,7 @@
     'opt_all_lang': 'Alle Sprachen',
     'opt_safe_strict': 'Streng', 'opt_safe_moderate': 'Mittel', 'opt_safe_off': 'Aus',
     'open_new_tab': 'In neuem Tab öffnen', 'hide_domain': 'Domain ausblenden',
+    'menu': 'Menü', 'close_menu': 'Menü schließen',
   },
   'fr': {
     'placeholder': 'Rechercher sur le web…',
@@ -40,6 +42,7 @@
     'opt_all_lang': 'Toutes les langues',
     'opt_safe_strict': 'Stricte', 'opt_safe_moderate': 'Modérée', 'opt_safe_off': 'Désactivée',
     'open_new_tab': 'Ouvrir dans un nouvel onglet', 'hide_domain': 'Masquer le domaine',
+    'menu': 'Menu', 'close_menu': 'Fermer le menu',
   },
   'es': {
     'placeholder': 'Buscar en la web…',
@@ -52,6 +55,7 @@
     'opt_all_lang': 'Todos los idiomas',
     'opt_safe_strict': 'Estricta', 'opt_safe_moderate': 'Moderada', 'opt_safe_off': 'Desactivada',
     'open_new_tab': 'Abrir en nueva pestaña', 'hide_domain': 'Ocultar dominio',
+    'menu': 'Menú', 'close_menu': 'Cerrar menú',
   },
   'it': {
     'placeholder': 'Cerca nel web…',
@@ -64,6 +68,7 @@
     'opt_all_lang': 'Tutte le lingue',
     'opt_safe_strict': 'Severa', 'opt_safe_moderate': 'Moderata', 'opt_safe_off': 'Disattivata',
     'open_new_tab': 'Apri in nuova scheda', 'hide_domain': 'Nascondi dominio',
+    'menu': 'Menu', 'close_menu': 'Chiudi menu',
   },
 }[lang2] -%}
 <!DOCTYPE html>
@@ -74,7 +79,7 @@
   <meta name="description" content="LOOGI — privacy-respecting search">
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex,nofollow">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}{% endblock %}{{ instance_name }}</title>
   {% block meta %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='themes/loogi/css/loogi.css') }}" type="text/css" media="screen">

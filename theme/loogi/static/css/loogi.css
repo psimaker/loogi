@@ -870,4 +870,47 @@ main.page_with_header ul.tabs a.active {
   cursor: default;
 }
 
+/* ────────── Hamburger-Toggle (Off-Canvas-Filter-Drawer) ────────── */
+/* Default: nur sichtbar im Phone-Block (siehe weiter unten). */
+#drawer_toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  color: var(--fg-3);
+  cursor: pointer;
+  transition: color .12s, border-color .12s, background .12s;
+}
+#drawer_toggle:hover { color: var(--fg); border-color: var(--line); }
+#drawer_toggle:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 2px; }
+
+/* ────────── Mobile (Phone ≤ 640 px) ────────── */
+@media (max-width: 640px) {
+  /* Topbar kompakt: 56 px Inhaltsraum + safe-area-inset-top fuer Notch.
+     Sticky-Top bleibt 0 (Bar laeuft bis zur Notch); padding-top schiebt
+     den Inhalt unter die Notch. */
+  body.results_endpoint #search { padding-top: env(safe-area-inset-top); }
+  body.results_endpoint #search_header {
+    height: auto;
+    min-height: 56px;
+    gap: 12px;
+    padding: 0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+  }
+  body.results_endpoint #search_logo img { height: 28px; }
+  body.results_endpoint .search_box {
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 12px;
+    gap: 10px;
+  }
+  body.results_endpoint #q { font-size: 15px; }
+
+  /* Hamburger sichtbar nur auf Phone */
+  #drawer_toggle { display: inline-flex; }
+}
 
