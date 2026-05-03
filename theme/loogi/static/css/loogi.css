@@ -968,5 +968,43 @@ main.page_with_header ul.tabs a.active {
   .results_layout { padding: 0; }
   #main_column { padding: 16px max(16px, env(safe-area-inset-right)) 0
                           max(16px, env(safe-area-inset-left)); }
+
+  /* ───── Tabs-Reihe horizontal scrollbar ─────
+     4 Tabs + Counts passen nicht in 375 px Viewport. overflow-x:auto laesst
+     den User horizontal scrollen, scrollbar visuell ausgeblendet (Touch-
+     Inertia trotzdem aktiv). results_meta ist auf Phone redundant — Counts
+     stehen an den Tabs. */
+  #categories {
+    padding: 0 max(12px, env(safe-area-inset-left));
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  #categories::-webkit-scrollbar { display: none; }
+  #categories_container { flex-shrink: 0; }
+  #categories .results_meta { display: none; }
+
+  /* ───── Result-Item: Hover-Actions auf Touch immer sichtbar ─────
+     Layout flippt von vertical-end-stack auf horizontal-row (passt besser
+     wenn die Aktionen unter dem Snippet erscheinen koennten — auf Phone
+     bleiben sie aber rechts in der Grid-Spalte 2). Tap-Targets 40x40
+     (knapp unter Apple-HIG 44, aber mehr passt nicht in den engen Result-
+     Header ohne Layout-Sprengen). */
+  .result_actions {
+    opacity: 1;
+    pointer-events: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+  }
+  .result_action { width: 40px; height: 40px; }
+
+  /* ───── Index-Page: Logo + Padding kompakter ───── */
+  body.index_endpoint .logo img { height: 88px; }
+  body.index_endpoint #main_index {
+    padding: 24px max(16px, env(safe-area-inset-left)) 16vh
+             max(16px, env(safe-area-inset-right));
+    gap: 24px;
+  }
 }
 
