@@ -54,33 +54,15 @@ a:hover { text-decoration: underline; }
 .sxng-icon-set       { width: 18px; height: 18px; }
 .sxng-icon-set-big   { width: 22px; height: 22px; }
 
-/* Header / Top-Nav (Index + Results) */
+/* Header (no top-nav per Designprototyp — Preferences/About im Footer) */
 main { flex: 1; display: flex; flex-direction: column; }
 
-#links_on_top {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 18px;
-  padding: 18px 24px;
-  font-size: 13px;
-  color: var(--fg-3);
-}
-#links_on_top a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--fg-2);
-  padding: 6px 10px;
-  border-radius: 8px;
-  transition: background .12s, color .12s;
-}
-#links_on_top a:hover {
-  color: var(--fg);
-  background: var(--panel);
-  text-decoration: none;
-}
-#links_on_top a span { font-size: 13px; }
+/* Decorative search-icon vor dem Input — Klick-Submit per Enter, Buttons hidden */
+.search_box_icon { color: var(--fg-3); flex-shrink: 0; }
+body.index_endpoint #send_search,
+body.index_endpoint #clear_search,
+body.search_endpoint #send_search,
+body.search_endpoint #clear_search { display: none; }
 
 /* ───────── Index page ───────── */
 body.index_endpoint main { align-items: center; justify-content: center; }
@@ -120,7 +102,7 @@ body.index_endpoint .search_box {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 0 14px 0 20px;
+  padding: 0 20px;
   background: var(--bg-2);
   border: 1px solid var(--line-soft);
   border-radius: 28px;
@@ -212,9 +194,9 @@ body.search_endpoint .search_box {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   height: 48px;
-  padding: 0 12px 0 16px;
+  padding: 0 16px 0 18px;
   background: var(--bg-2);
   border: 1px solid var(--line-soft);
   border-radius: 12px;
@@ -591,15 +573,18 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
 #pagination input[type="submit"]:hover { color: var(--fg); background: var(--panel); border-color: var(--line); }
 #pagination .page_number_current { color: var(--fg); background: var(--accent-soft); border-color: var(--accent-line); cursor: default; }
 
-/* Footer */
+/* Footer — flex, rechts-ausgerichtet via .spacer (Designprototyp LOOGI.html) */
 footer {
   border-top: 1px solid var(--line-soft);
-  padding: 16px 24px;
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
   font-size: 12px;
   color: var(--fg-4);
-  text-align: center;
 }
-footer a { color: var(--fg-3); }
+footer .spacer { flex: 1; }
+footer a { color: var(--fg-3); text-decoration: none; }
 footer a:hover { color: var(--fg); text-decoration: none; }
 
 /* Errors */
