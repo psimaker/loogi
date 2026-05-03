@@ -7,6 +7,10 @@
 (function () {
   'use strict';
 
+  // Flip no-js → js so CSS hide_if_nojs / show_if_nojs greift wie erwartet
+  // (autocomplete-Box bleibt sonst sichtbar mit leerer Border).
+  document.documentElement.classList.replace('no-js', 'js');
+
   // Search focus shortcut
   document.addEventListener('keydown', function (e) {
     if ((e.metaKey || e.ctrlKey) && e.key && e.key.toLowerCase() === 'k') {

@@ -28,10 +28,12 @@
     {{ result_open_link(url, classes) }}{{ title }}{{ result_close_link() }}
 {%- endmacro -%}
 
-<!-- Draw result header — Spec: 3 Zeilen vertikal gap 4. Zeile 1 = URL,
-     Zeile 2 = Title, Zeile 3 = Snippet (kommt aus default.html). -->
+<!-- Draw result header — Spec: 3 Zeilen vertikal gap 4 in .result_main.
+     Outer .result ist CSS-Grid [1fr | auto] mit Hover-Actions-Spalte rechts.
+     Zeile 1 = URL, Zeile 2 = Title, Zeile 3 = Snippet (kommt aus default.html). -->
 {% macro result_header(result, favicons, image_proxify) -%}
 <article class="result {% if result['template'] %}result-{{ result.template|replace('.html', '') }}{% else %}result-default{% endif %} {% if result['category'] %}category-{{ result['category'] }}{% endif %}">
+<div class="result_main">
   {{- result_open_link(result.url, "url_header") -}}
   {{ favicon_square(result.parsed_url.netloc) }}
   <span class="url_wrapper">
@@ -62,8 +64,10 @@
 <div class="break"></div>{{- '' -}}
 {%- endmacro -%}
 
-<!-- Draw result footer — Designprototyp ResultItem hover-actions column -->
+<!-- Draw result footer — Designprototyp ResultItem: schliesst .result_main,
+     oeffnet + schliesst .result_actions als 2. Grid-Spalte. -->
 {%- macro result_footer(result) -%}
+</div> {#- /.result_main -#}
 <div class="result_actions" aria-hidden="true">
   <a href="{{ result.url }}" target="_blank" rel="noopener noreferrer" class="result_action" title="{{ _('Open in new tab') }}">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 14 20 4M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>

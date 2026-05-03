@@ -122,23 +122,6 @@ body.index_endpoint #q {
   letter-spacing: 0.005em;
 }
 body.index_endpoint #q::placeholder { color: var(--fg-4); }
-body.index_endpoint #send_search,
-body.index_endpoint #clear_search {
-  background: transparent;
-  border: 0;
-  color: var(--fg-3);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  transition: background .12s, color .12s;
-}
-body.index_endpoint #send_search:hover,
-body.index_endpoint #clear_search:hover { background: var(--panel-2); color: var(--fg); }
-
 /* Categories on the index page (hidden — search defaults to general) */
 body.index_endpoint #categories { display: none; }
 
@@ -228,23 +211,10 @@ body.search_endpoint #q {
   font: inherit;
   font-size: 15px;
 }
-body.search_endpoint #send_search,
-body.search_endpoint #clear_search {
-  background: transparent;
-  border: 0;
-  color: var(--fg-3);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-}
-body.search_endpoint #send_search:hover,
-body.search_endpoint #clear_search:hover { background: var(--panel); color: var(--fg); }
-
-/* Autocomplete */
+/* Autocomplete (Designprototyp hat keine Send/Clear-Buttons in Suchbox —
+   Buttons bleiben im DOM fuer sxng-core JS-Hooks, sind aber via display:none
+   in der globalen Regel oben unsichtbar). Autocomplete nur sichtbar wenn
+   sxng-core JS Eintraege populated hat (no-js und empty-ul → hidden). */
 .autocomplete {
   position: absolute;
   top: calc(100% + 6px);
@@ -256,6 +226,10 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+html.no-js .autocomplete,
+.autocomplete:has(ul:empty) {
+  display: none;
 }
 .autocomplete:empty,
 .autocomplete ul:empty { display: none; }
@@ -517,13 +491,19 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
 }
 
 
-/* Result-Item (Spec): padding 18px 0, flex column gap 4, border-bottom 1
-   line-soft. 3 Zeilen — URL (Mono 12 fg-3) | Title (16 fg 500) | Snippet
-   (13.5 fg-2 1.55 wrap-pretty). min-width 0 fuer Text-Children. */
+/* Result-Item (Spec): padding 18px 0, border-bottom 1 line-soft.
+   Outer = CSS-Grid [1fr Content | auto Hover-Actions] gap 20 (Designprototyp
+   ResultItem). Innen .result_main = flex column gap 4: 3 Zeilen — URL
+   (Mono 12 fg-3) | Title (16 fg 500) | Snippet (13.5 fg-2 1.55 wrap-pretty).
+   min-width 0 fuer Text-Children, sonst sprengt langer Text das Layout. */
 .result {
-  position: relative;
-  padding: 18px 56px 18px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  padding: 18px 0;
   border-bottom: 1px solid var(--line-soft);
+}
+.result_main {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -835,11 +815,8 @@ body.page_with_header ul.tabs a.active {
 }
 .info-page strong { color: var(--fg); font-weight: 600; }
 
-/* Result-Item Hover-Actions (Designprototyp ResultItem) */
+/* Result-Item Hover-Actions (Designprototyp ResultItem) — 2. Grid-Spalte */
 .result_actions {
-  position: absolute;
-  top: 18px;
-  right: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;

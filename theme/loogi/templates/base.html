@@ -1,3 +1,36 @@
+{#- Locale-Code fuer Info-Pages + LOOGI-eigene UI-Strings (en/de/fr/es/it).
+    Fallback auf en. Set ganz oben damit alle Includes (simple_search.html,
+    search.html, results.html etc.) den dict referenzieren koennen — Jinja
+    propagiert top-level sets in den Render-Kontext aller {% include %}s. -#}
+{%- set lang2 = (locale_rfc5646 or 'en')[:2] -%}
+{%- if lang2 not in ('en', 'de', 'fr', 'es', 'it') -%}{%- set lang2 = 'en' -%}{%- endif -%}
+{%- set LOOGI_T = {
+  'en': {
+    'placeholder': 'Search the web…',
+    'privacy': 'Privacy', 'terms': 'Terms', 'about': 'About', 'preferences': 'Preferences', 'contact': 'Contact',
+    'lang_label': 'Language',
+  },
+  'de': {
+    'placeholder': 'Im Web suchen…',
+    'privacy': 'Datenschutz', 'terms': 'AGB', 'about': 'Über', 'preferences': 'Einstellungen', 'contact': 'Kontakt',
+    'lang_label': 'Sprache',
+  },
+  'fr': {
+    'placeholder': 'Rechercher sur le web…',
+    'privacy': 'Confidentialité', 'terms': 'Conditions', 'about': 'À propos', 'preferences': 'Préférences', 'contact': 'Contact',
+    'lang_label': 'Langue',
+  },
+  'es': {
+    'placeholder': 'Buscar en la web…',
+    'privacy': 'Privacidad', 'terms': 'Términos', 'about': 'Acerca de', 'preferences': 'Preferencias', 'contact': 'Contacto',
+    'lang_label': 'Idioma',
+  },
+  'it': {
+    'placeholder': 'Cerca nel web…',
+    'privacy': 'Privacy', 'terms': 'Termini', 'about': 'Informazioni', 'preferences': 'Preferenze', 'contact': 'Contatto',
+    'lang_label': 'Lingua',
+  },
+}[lang2] -%}
 <!DOCTYPE html>
 <html class="no-js theme-dark" lang="{{ locale_rfc5646 }}" {% if rtl %} dir="rtl"{% endif %}>
 <head>
@@ -37,16 +70,13 @@
     {% block content %}{% endblock %}
   </main>
 
-  {#- Locale-Code fuer Info-Pages (en/de/fr/es/it). Fallback auf en. -#}
-  {%- set lang2 = (locale_rfc5646 or 'en')[:2] -%}
-  {%- if lang2 not in ('en', 'de', 'fr', 'es', 'it') -%}{%- set lang2 = 'en' -%}{%- endif -%}
   <footer>
     <span class="spacer"></span>
-    <a href="{{ url_for('info', pagename='privacy', locale=lang2) }}">{{ _('Privacy policy') }}</a>
-    <a href="{{ url_for('info', pagename='terms', locale=lang2) }}">{{ _('Terms') }}</a>
-    <a href="https://github.com/psimaker" target="_blank" rel="noopener noreferrer">{{ _('About') }}</a>
-    <a href="{{ url_for('preferences') }}">{{ _('Preferences') }}</a>
-    <a href="mailto:umut.erdem@protonmail.com">{{ _('Contact') }}</a>
+    <a href="{{ url_for('info', pagename='privacy', locale=lang2) }}">{{ LOOGI_T.privacy }}</a>
+    <a href="{{ url_for('info', pagename='terms', locale=lang2) }}">{{ LOOGI_T.terms }}</a>
+    <a href="https://github.com/psimaker" target="_blank" rel="noopener noreferrer">{{ LOOGI_T.about }}</a>
+    <a href="{{ url_for('preferences') }}">{{ LOOGI_T.preferences }}</a>
+    <a href="mailto:umut.erdem@protonmail.com">{{ LOOGI_T.contact }}</a>
     {% if enable_metrics %}<a href="{{ url_for('stats') }}">{{ _('Engine stats') }}</a>{% endif %}
   </footer>
 </body>
