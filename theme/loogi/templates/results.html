@@ -165,8 +165,12 @@
         {% set pend = pageno + 6 %}
       {% endif %}
       <div class="numbered_pagination">
+      {#- Mobile-Pagination zeigt nur ein Sliding-Window von 5 Seitennummern
+          ab pageno (siehe ADR 0014 + CSS .phone_hidden). Server rendert
+          weiterhin alle Seiten — CSS blendet die ausserhalb [pageno, pageno+4]
+          auf Phone aus. -#}
       {% for x in range(pstart, pend) %}
-        <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="page_number">
+        <form method="{{ method or 'GET' }}" action="{{ url_for('search') }}" class="page_number{% if x < pageno or x > pageno + 4 %} phone_hidden{% endif %}">
           <input type="hidden" name="q" value="{{ q|e }}">
           <input type="hidden" name="pageno" value="{{ x }}">
           {{ state_inputs() }}

@@ -544,7 +544,7 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
   letter-spacing: -0.005em;
   min-width: 0;
 }
-.result h3 a { color: var(--fg); text-decoration: none; }
+.result h3 a { color: var(--fg); text-decoration: none; overflow-wrap: anywhere; }
 .result h3 a:hover { color: var(--fg); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
 .result .content {
   margin: 0;
@@ -553,6 +553,7 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
   line-height: 1.6;
   text-wrap: pretty;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 .result .content.empty_element { color: var(--fg-4); font-style: italic; }
 .result .highlight { color: var(--accent); font-weight: 500; }
@@ -994,20 +995,13 @@ main.page_with_header ul.tabs a.active {
   #categories_container { flex-shrink: 0; }
   #categories .results_meta { display: none; }
 
-  /* ───── Result-Item: Hover-Actions auf Touch immer sichtbar ─────
-     Layout flippt von vertical-end-stack auf horizontal-row (passt besser
-     wenn die Aktionen unter dem Snippet erscheinen koennten — auf Phone
-     bleiben sie aber rechts in der Grid-Spalte 2). Tap-Targets 40x40
-     (knapp unter Apple-HIG 44, aber mehr passt nicht in den engen Result-
-     Header ohne Layout-Sprengen). */
-  .result_actions {
-    opacity: 1;
-    pointer-events: auto;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-  }
-  .result_action { width: 40px; height: 40px; }
+  /* ───── Result-Item: Actions weg auf Phone, Layout block ─────
+     "Im neuen Tab oeffnen" und "Domain ausblenden" sind auf Phone mehr
+     Stoerung als Nutzen (kleines Display, kein Hover, Daumen verdeckt
+     den rechten Rand). Komplett ausblenden + Grid-Layout zu Block weil
+     die zweite Spalte sonst Platz reservieren wuerde. */
+  .result_actions { display: none; }
+  .result { display: block; }
 
   /* ───── Index-Page: Logo + Padding kompakter ───── */
   body.index_endpoint .logo img { height: 88px; }
@@ -1017,13 +1011,17 @@ main.page_with_header ul.tabs a.active {
     gap: 24px;
   }
 
-  /* ───── Pagination Touch-Targets (Apple HIG ≥44px) ───── */
+  /* ───── Pagination Touch-Targets (Apple HIG ≥44px) ─────
+     Auf Phone nur 5 Seitennummern: [pageno, pageno+4]. Forms ausserhalb
+     dieser Spanne tragen Klasse .phone_hidden (siehe results.html) und
+     werden hier ausgeblendet. */
   #pagination {
     gap: 8px;
     padding: 24px max(12px, env(safe-area-inset-left))
              calc(env(safe-area-inset-bottom) + 60px)
              max(12px, env(safe-area-inset-right));
   }
+  #pagination form.phone_hidden { display: none; }
   #pagination .previous_page button,
   #pagination .next_page button,
   #pagination input[type="submit"],
