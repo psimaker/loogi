@@ -38,3 +38,4 @@ Vorlage fuer neue ADRs: [`0000-template.md`](./0000-template.md).
 | [0008](./0008-keine-ports-exposed-via-npm.md) | Keine Ports exposed, Reverse-Proxy via NPM | accepted |
 | [0009](./0009-config-deep-merge-statt-vollersatz.md) | Konfig: Deep-Merge statt Vollersatz | accepted |
 | [0010](./0010-fonts-via-bunny-statt-google-cdn.md) | Fonts via fonts.bunny.net statt Google-CDN | accepted |
+| [0011](./0011-legal-pages-via-infopage-patch.md) | Datenschutz/AGB als Infopages, Toc-Erweiterung via Dockerfile-Patch | accepted |

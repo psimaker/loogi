@@ -37,7 +37,7 @@
 
     <nav id="links_on_top">
       {%- from 'loogi/icons.html' import icon_big -%}
-      <a href="{{ url_for('info', pagename='about') }}" class="link_on_top_about">{{ icon_big('information-circle') }}<span>{{ _('About') }}</span></a>
+      <a href="https://github.com/psimaker" target="_blank" rel="noopener noreferrer" class="link_on_top_about">{{ icon_big('information-circle') }}<span>{{ _('About') }}</span></a>
       <a href="{{ url_for('preferences') }}" class="link_on_top_preferences">{{ icon_big('settings') }}<span>{{ _('Preferences') }}</span></a>
     </nav>
 
@@ -45,10 +45,14 @@
     {% block content %}{% endblock %}
   </main>
 
+  {#- Locale-Code fuer Info-Pages (en/de/fr/es/it). Fallback auf en. -#}
+  {%- set lang2 = (locale_rfc5646 or 'en')[:2] -%}
+  {%- if lang2 not in ('en', 'de', 'fr', 'es', 'it') -%}{%- set lang2 = 'en' -%}{%- endif -%}
   <footer>
-    <a href="{{ url_for('info', pagename='about') }}">{{ _('About') }}</a>
-    {% if get_setting('general.privacypolicy_url') %}· <a href="{{ get_setting('general.privacypolicy_url') }}">{{ _('Privacy policy') }}</a>{% endif %}
-    {% if get_setting('general.contact_url') %}· <a href="{{ get_setting('general.contact_url') }}">{{ _('Contact instance maintainer') }}</a>{% endif %}
+    <a href="{{ url_for('info', pagename='privacy', locale=lang2) }}">{{ _('Privacy policy') }}</a>
+    · <a href="{{ url_for('info', pagename='terms', locale=lang2) }}">{{ _('Terms') }}</a>
+    · <a href="https://github.com/psimaker" target="_blank" rel="noopener noreferrer">{{ _('About') }}</a>
+    · <a href="mailto:umut.erdem@protonmail.com">{{ _('Contact instance maintainer') }}</a>
     {% if enable_metrics %}· <a href="{{ url_for('stats') }}">{{ _('Engine stats') }}</a>{% endif %}
   </footer>
 </body>

@@ -78,6 +78,18 @@ Pflicht-Templates hinzugekommen sind. Siehe ADR 0002 / 0009.
 └── docs/adr/              # Architektur-Entscheidungen (MADR)
 ```
 
+## Rechtliche Hinweise
+
+Datenschutzerklaerung und AGB sind unter `/info/<lang>/privacy` und
+`/info/<lang>/terms` (EN/DE/FR/ES/IT) erreichbar; die Markdown-Quellen
+liegen in `searxng/infopage/<lang>/`.
+
+> **Disclaimer**: Die Texte in `privacy.md` und `terms.md` wurden
+> nicht juristisch geprueft. Vor einem oeffentlichen Launch unter
+> loogi.ch sollten sie von einem Anwalt im Schweizer Raum reviewed
+> werden, insbesondere die DSG-/DSGVO-Compliance der Datenschutzerklaerung
+> und die Haftungsklauseln der AGB.
+
 ## Lizenz
 
 [AGPL-3.0-or-later](./LICENSE) — abgeleitet von SearXNG.

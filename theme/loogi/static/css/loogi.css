@@ -658,14 +658,77 @@ body.preferences_endpoint #main_preferences {
 }
 .preferences_back a:hover { color: var(--fg); background: var(--panel); text-decoration: none; }
 
-/* About / Info pages */
-.info_endpoint .infopage,
-body.info_endpoint #main_info {
+/* About / Info pages (Markdown-rendered: privacy, terms, about, search-syntax) */
+body.page_with_header #page_logo {
+  display: block;
+  padding: 22px 0 12px;
+  text-align: center;
+}
+body.page_with_header #page_logo img {
+  height: 56px;
+  width: auto;
+  display: inline-block;
+}
+body.info_endpoint main,
+body.page_with_header main {
   max-width: 760px;
   margin: 0 auto;
-  padding: 0 24px 32px;
+  padding: 0 24px 48px;
+}
+body.info_endpoint ul.tabs,
+body.page_with_header ul.tabs {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 24px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line-soft);
+}
+body.info_endpoint ul.tabs li,
+body.page_with_header ul.tabs li { margin: 0; }
+body.info_endpoint ul.tabs a,
+body.page_with_header ul.tabs a {
+  display: inline-block;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  color: var(--fg-3);
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  transition: color .12s, border-color .12s;
+  margin-bottom: -1px;
+}
+body.info_endpoint ul.tabs a:hover,
+body.page_with_header ul.tabs a:hover { color: var(--fg); }
+body.info_endpoint ul.tabs a.active,
+body.page_with_header ul.tabs a.active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+.info-page {
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--fg-2);
 }
-.info_endpoint h1, .info_endpoint h2, .info_endpoint h3 { color: var(--fg); }
+.info-page h1 { font-size: 28px; font-weight: 600; color: var(--fg); margin: 16px 0 18px; }
+.info-page h2 { font-size: 19px; font-weight: 600; color: var(--fg); margin: 28px 0 10px; }
+.info-page h3 { font-size: 16px; font-weight: 600; color: var(--fg); margin: 20px 0 8px; }
+.info-page p  { margin: 8px 0 12px; }
+.info-page ul, .info-page ol { padding-left: 22px; margin: 8px 0 12px; }
+.info-page li { margin: 4px 0; }
+.info-page a { color: var(--link); }
+.info-page a:hover { color: var(--accent); }
+.info-page code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+}
+.info-page hr {
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  margin: 24px 0;
+}
+.info-page strong { color: var(--fg); font-weight: 600; }

@@ -87,12 +87,10 @@ general:
   contact_url: false
   enable_metrics: false
 
-brand:
-  new_issue_url: false
-  docs_url: https://docs.searxng.org/
-  public_instances: false
-  wiki_url: false
-  issue_url: false
+# brand-Block bewusst nicht ueberschrieben: das LOOGI-Theme verlinkt nirgends
+# auf brand.issue_url / brand.public_instances / brand.wiki_url / brand.docs_url,
+# also schaden die SearXNG-Default-Werte nicht. Eigener Code: GitHub-Link auf
+# https://github.com/psimaker, Kontakt mailto:umut.erdem@protonmail.com (siehe base.html).
 
 search:
   safe_search: 0
