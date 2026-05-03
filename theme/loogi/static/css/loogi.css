@@ -339,27 +339,111 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
 .search_filters select:hover { color: var(--fg); border-color: var(--line); }
 .search_filters select:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
 
-/* Results layout */
-#results {
+/* Results-Layout — 3 Spalten: Filter-Sidebar | Results | Info-Sidebar
+   (Designprototyp loogi-app.jsx App.render). Siehe ADR 0013. */
+.results_layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 32px;
-  margin-top: 20px;
+  grid-template-columns: 240px minmax(0, 1fr) 320px;
+  gap: 28px;
+  margin-top: 8px;
 }
-@media (max-width: 900px) {
-  #results { grid-template-columns: 1fr; }
-  #sidebar { order: 2; }
+@media (max-width: 1100px) {
+  .results_layout { grid-template-columns: 220px minmax(0, 1fr); }
+  #info_sidebar { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; padding-top: 0; }
+}
+@media (max-width: 760px) {
+  .results_layout { grid-template-columns: 1fr; }
+  #filters_sidebar { order: 2; }
+  #info_sidebar { order: 3; grid-template-columns: 1fr; }
+  #results_main { order: 1; }
 }
 
 #urls { min-width: 0; }
-#sidebar {
+#results_main { min-width: 0; }
+
+/* Filter-Sidebar (LINKS) */
+#filters_sidebar {
+  padding-top: 12px;
+}
+.filters_form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.filter_section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.filter_label {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  font-weight: 500;
+}
+.filters_form select {
+  background: var(--bg-2);
+  color: var(--fg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  padding: 8px 28px 8px 12px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--fg-3) 50%),
+                    linear-gradient(135deg, var(--fg-3) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  width: 100%;
+}
+.filters_form select:hover { color: var(--fg); border-color: var(--line); }
+.filters_form select:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
+.filters_apply {
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: var(--accent-soft);
+  color: var(--fg);
+  border: 1px solid var(--accent-line);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+.filters_apply:hover { background: oklch(0.80 0.105 195 / 0.22); border-color: var(--accent); }
+
+/* Info-Sidebar (RECHTS) — Card-Stack analog Designprototyp InfoColumn */
+#info_sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 12px;
   font-size: 13.5px;
 }
-
-#result_count {
-  font-size: 12px;
+.info_card {
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 14px 16px;
+  overflow: hidden;
+}
+.info_card.subtle {
+  background: transparent;
+  padding: 12px 14px;
+}
+.info_card_label {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--fg-4);
-  margin: 0 0 16px;
+  font-weight: 500;
+  margin-bottom: 10px;
 }
 
 /* Single result card — Designprototyp ResultItem (loogi-app.jsx) */
@@ -500,35 +584,37 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
 .result-images .image_resolution { display: none; }
 .result-images .detail { display: none; }
 
-/* Sidebar elements */
-#sidebar .sidebar-collapsible {
-  margin-bottom: 14px;
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  background: var(--panel);
-  overflow: hidden;
+/* Sidebar-Collapsibles innerhalb info_card — die Card ist die Box, also keine
+   eigene Box doppeln. Summary als kompakter Card-Header, expanded by default. */
+.info_card .sidebar-collapsible {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
 }
-#sidebar .sidebar-collapsible[open] { background: var(--panel); }
-#sidebar .sidebar-collapsible summary.title,
-#sidebar .sidebar-collapsible h2.title,
-#sidebar .sidebar-collapsible h4.title {
+.info_card .sidebar-collapsible[open] { background: transparent; }
+.info_card .sidebar-collapsible summary.title,
+.info_card .sidebar-collapsible h2.title,
+.info_card .sidebar-collapsible h4.title {
   cursor: pointer;
   list-style: none;
-  padding: 10px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  padding: 0 0 8px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--fg-3);
+  color: var(--fg-4);
   margin: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
-#sidebar .sidebar-collapsible summary::-webkit-details-marker { display: none; }
-#sidebar .sidebar-collapsible ul.wrapper,
-#sidebar .sidebar-collapsible .wrapper { padding: 0 14px 12px; margin: 0; list-style: none; }
-#sidebar .sidebar-collapsible li { margin: 4px 0; }
-#sidebar .sidebar-collapsible form { margin: 0; }
-#sidebar .sidebar-collapsible input.suggestion,
-#sidebar .sidebar-collapsible input[type="submit"] {
+.info_card .sidebar-collapsible summary::-webkit-details-marker { display: none; }
+.info_card .sidebar-collapsible ul.wrapper,
+.info_card .sidebar-collapsible .wrapper { padding: 0; margin: 0; list-style: none; }
+.info_card .sidebar-collapsible li { margin: 4px 0; }
+.info_card .sidebar-collapsible form { margin: 0; }
+.info_card .sidebar-collapsible input.suggestion,
+.info_card .sidebar-collapsible input[type="submit"] {
   background: transparent;
   border: 0;
   color: var(--fg-2);
@@ -538,12 +624,12 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
   padding: 4px 0;
   text-align: left;
 }
-#sidebar .sidebar-collapsible input.suggestion:hover,
-#sidebar .sidebar-collapsible input[type="submit"]:hover { color: var(--accent); text-decoration: underline; }
+.info_card .sidebar-collapsible input.suggestion:hover,
+.info_card .sidebar-collapsible input[type="submit"]:hover { color: var(--accent); text-decoration: underline; }
 
-/* Infobox */
+/* Infobox — innerhalb .info_card, deshalb kein eigenes Padding */
 .infobox {
-  padding: 14px;
+  padding: 0;
 }
 .infobox h2.title {
   font-size: 16px;

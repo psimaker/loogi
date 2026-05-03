@@ -18,7 +18,36 @@
   {% set only_template = '' %}
 {% endif %}
 
-<div id="results" class="{{ only_template }}">
+<div class="results_layout">
+
+<aside id="filters_sidebar">
+  {#- Filter-Sidebar (Designprototyp loogi-app.jsx Sidebar). Eigene Form,
+      submitted /search mit q + ausgewaehlten Kategorien + neuen Filterwerten. -#}
+  <form method="POST" action="{{ url_for('search') }}" class="filters_form" role="search">
+    <input type="hidden" name="q" value="{{ q|e }}">
+    {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
+    <input type="hidden" name="theme" value="{{ theme }}">
+
+    <div class="filter_section">
+      <span class="filter_label mono">{{ _('Time range') }}</span>
+      {% include 'loogi/filters/time_range.html' %}
+    </div>
+
+    <div class="filter_section">
+      <span class="filter_label mono">{{ _('Language') }}</span>
+      {% include 'loogi/filters/languages.html' %}
+    </div>
+
+    <div class="filter_section">
+      <span class="filter_label mono">{{ _('SafeSearch') }}</span>
+      {% include 'loogi/filters/safesearch.html' %}
+    </div>
+
+    <button type="submit" class="filters_apply">{{ _('Apply') }}</button>
+  </form>
+</aside>
+
+<div id="results_main" class="{{ only_template }}">
 
   {%- if answers -%}
     {%- include 'loogi/elements/answers.html' -%}
@@ -101,35 +130,39 @@
     {% endif %}
   </div>
 
-  <aside id="sidebar">
-    {%- if number_of_results != '0' -%}
-    <p id="result_count">{{ _('Number of results') }}: {{ number_of_results }}</p>
-    {%- endif -%}
+</div> {#- /#results_main -#}
 
-    {%- if infoboxes -%}
-      <div id="infoboxes">
-        <details open class="sidebar-collapsible">
-          <summary class="title">{{ _('Info') }}</summary>
-          {%- for infobox in infoboxes -%}
-            {%- include 'loogi/elements/infobox.html' -%}
-          {%- endfor -%}
-        </details>
-      </div>
-    {%- endif -%}
+<aside id="info_sidebar">
+  {#- Right-Column-Cards (Designprototyp loogi-app.jsx InfoColumn) -#}
+  {%- if infoboxes -%}
+    <div class="info_card">
+      <span class="info_card_label mono">{{ _('Info') }}</span>
+      {%- for infobox in infoboxes -%}
+        {%- include 'loogi/elements/infobox.html' -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
 
-    {%- if suggestions -%}
+  {%- if suggestions -%}
+    <div class="info_card">
       {%- include 'loogi/elements/suggestions.html' -%}
-    {%- endif -%}
+    </div>
+  {%- endif -%}
 
+  <div class="info_card subtle">
     {%- include 'loogi/elements/engines_msg.html' -%}
-
-    {%- if search_formats -%}
-      {%- include 'loogi/elements/apis.html' -%}
-    {%- endif -%}
-  </aside>
-
-  <div id="backToTop">
-    <a href="#" aria-label="{{ _('Back to top') }}">{{ icon_small('navigate-up') }}</a>
   </div>
+
+  {%- if search_formats -%}
+    <div class="info_card subtle">
+      {%- include 'loogi/elements/apis.html' -%}
+    </div>
+  {%- endif -%}
+</aside>
+
+</div> {#- /.results_layout -#}
+
+<div id="backToTop">
+  <a href="#" aria-label="{{ _('Back to top') }}">{{ icon_small('navigate-up') }}</a>
 </div>
 {% endblock %}

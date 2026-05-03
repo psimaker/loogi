@@ -40,3 +40,4 @@ Vorlage fuer neue ADRs: [`0000-template.md`](./0000-template.md).
 | [0010](./0010-fonts-via-bunny-statt-google-cdn.md) | Fonts via fonts.bunny.net statt Google-CDN | accepted |
 | [0011](./0011-legal-pages-via-infopage-patch.md) | Datenschutz/AGB als Infopages, Toc-Erweiterung via Dockerfile-Patch | accepted |
 | [0012](./0012-bypass-netz-fuer-lokale-clients.md) | Bypass-Netz `loogi-net` fuer lokale Service-Konsumenten | accepted |
+| [0013](./0013-3-spalten-results-layout.md) | 3-Spalten-Layout (Filter / Results / Info) auf der Results-Seite | accepted |
