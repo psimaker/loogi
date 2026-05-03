@@ -62,8 +62,16 @@
 <div class="break"></div>{{- '' -}}
 {%- endmacro -%}
 
-<!-- Draw result footer -->
+<!-- Draw result footer — Designprototyp ResultItem hover-actions column -->
 {%- macro result_footer(result) -%}
+<div class="result_actions" aria-hidden="true">
+  <a href="{{ result.url }}" target="_blank" rel="noopener noreferrer" class="result_action" title="{{ _('Open in new tab') }}">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 14 20 4M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>
+  </a>
+  <button type="button" class="result_action" title="{{ _('Hide domain') }}" data-domain="{{ result.parsed_url.netloc }}" onclick="this.closest('.result').style.display='none'">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8M9.4 5.6A10.7 10.7 0 0 1 12 5c5 0 9 4 10 7-.4 1.2-1.3 2.7-2.6 4M6 6.6C3.7 8.3 2.4 10.6 2 12c1 3 5 7 10 7 1.7 0 3.3-.4 4.7-1.2"/></svg>
+  </button>
+</div>
 </article>
 {%- endmacro -%}
 

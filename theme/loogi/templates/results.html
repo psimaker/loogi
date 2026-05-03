@@ -18,55 +18,220 @@
   {% set only_template = '' %}
 {% endif %}
 
+{#-
+  =============================================================================
+  Results-Layout — pixel-perfekter Port von loogi-app.jsx App-Komponente.
+  Aussen-Flex: [240px Filter-Sidebar | 1fr Main-Block].
+  Main-Block ist selbst Flex: [1fr Center-Column | 320px Info-Sidebar].
+  Komponenten ohne SearXNG-Backing (Region, Sources, AISummary-Generator,
+  Source-Mix-Klassifikation, Related-Searches als Designdaten) sind mit
+  Mock-Werten aus loogi-search-design/project/loogi-data.jsx befuellt.
+  =============================================================================
+-#}
 <div class="results_layout">
 
+{#- ────────── Filter-Sidebar (LINKS, 240 px) ────────── -#}
 <aside id="filters_sidebar">
-  {#- Filter-Sidebar (Designprototyp loogi-app.jsx Sidebar). Eigene Form,
-      submitted /search mit q + ausgewaehlten Kategorien + neuen Filterwerten. -#}
-  <form method="POST" action="{{ url_for('search') }}" class="filters_form" role="search">
-    <input type="hidden" name="q" value="{{ q|e }}">
-    {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
-    <input type="hidden" name="theme" value="{{ theme }}">
+  <div class="sidebar_header">
+    <span class="filter_label mono">{{ _('Filters') }}</span>
+    <button type="button" class="sidebar_collapse_btn" aria-label="{{ _('Collapse sidebar') }}" onclick="document.body.classList.toggle('sidebar_collapsed')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate(180deg)"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+  </div>
 
-    <div class="filter_section">
-      <span class="filter_label mono">{{ _('Time range') }}</span>
-      {% include 'loogi/filters/time_range.html' %}
+  {#- Time-Range RadioList -#}
+  <div class="filter_section">
+    <span class="filter_label mono">{{ _('Time') }}</span>
+    <div class="radio_list">
+      {%- for opt_value, opt_label in [
+        ('',      'Anytime'),
+        ('day',   'Past 24h'),
+        ('week',  'Past week'),
+        ('month', 'Past month'),
+        ('year',  'Past year'),
+      ] -%}
+        <form method="POST" action="{{ url_for('search') }}" class="radio_form">
+          <input type="hidden" name="q" value="{{ q|e }}">
+          {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
+          <input type="hidden" name="language" value="{{ current_language }}">
+          <input type="hidden" name="safesearch" value="{{ safesearch }}">
+          <input type="hidden" name="theme" value="{{ theme }}">
+          <button type="submit" name="time_range" value="{{ opt_value }}" class="radio_option{% if (time_range or '') == opt_value %} selected{% endif %}">
+            <span class="radio_indicator"><span class="radio_dot"></span></span>
+            <span class="radio_label">{{ _(opt_label) }}</span>
+          </button>
+        </form>
+      {%- endfor -%}
     </div>
+  </div>
 
-    <div class="filter_section">
-      <span class="filter_label mono">{{ _('Language') }}</span>
-      {% include 'loogi/filters/languages.html' %}
+  {#- Language RadioList — Designprototyp zeigt 5 Optionen (statt 100+ SearXNG-Locales) -#}
+  <div class="filter_section">
+    <span class="filter_label mono">{{ _('Language') }}</span>
+    <div class="radio_list">
+      {%- for opt_value, opt_label in [
+        ('all', 'All languages'),
+        ('en',  'English'),
+        ('de',  'Deutsch'),
+        ('fr',  'Français'),
+        ('ja',  '日本語'),
+      ] -%}
+        <form method="POST" action="{{ url_for('search') }}" class="radio_form">
+          <input type="hidden" name="q" value="{{ q|e }}">
+          {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
+          <input type="hidden" name="time_range" value="{{ time_range }}">
+          <input type="hidden" name="safesearch" value="{{ safesearch }}">
+          <input type="hidden" name="theme" value="{{ theme }}">
+          <button type="submit" name="language" value="{{ opt_value }}" class="radio_option{% if current_language == opt_value %} selected{% endif %}">
+            <span class="radio_indicator"><span class="radio_dot"></span></span>
+            <span class="radio_label">{{ opt_label }}</span>
+          </button>
+        </form>
+      {%- endfor -%}
     </div>
+  </div>
 
-    <div class="filter_section">
-      <span class="filter_label mono">{{ _('SafeSearch') }}</span>
-      {% include 'loogi/filters/safesearch.html' %}
+  {#- Region RadioList — Mock-only, kein SearXNG-Backing, visuell 1:1 zum Design -#}
+  <div class="filter_section">
+    <span class="filter_label mono">{{ _('Region') }}</span>
+    <div class="radio_list">
+      {%- for opt_label in ['Worldwide', 'Europe', 'Germany', 'USA', 'Japan'] -%}
+        <button type="button" class="radio_option{% if loop.first %} selected{% endif %}" data-region="{{ opt_label }}">
+          <span class="radio_indicator"><span class="radio_dot"></span></span>
+          <span class="radio_label">{{ _(opt_label) }}</span>
+        </button>
+      {%- endfor -%}
     </div>
+  </div>
 
-    <button type="submit" class="filters_apply">{{ _('Apply') }}</button>
-  </form>
+  {#- Sources Checkboxes — Mock-only mit Designprototyp-Counts (LOOGI_SOURCES) -#}
+  <div class="filter_section">
+    <span class="filter_label mono">{{ _('Sources') }}</span>
+    <div class="checkbox_list">
+      {%- for src_id, src_label, src_count, src_default in [
+        ('academic',    'Academic',          412,  True),
+        ('news',        'News & press',     1284,  True),
+        ('code',        'Code & repos',       96,  False),
+        ('blogs',       'Blogs & notebooks', 730,  False),
+        ('books',       'Books & PDFs',       58,  False),
+        ('discussions', 'Discussions',       311,  False),
+      ] -%}
+        <label class="checkbox_option{% if src_default %} checked{% endif %}" data-source="{{ src_id }}">
+          <span class="checkbox_indicator">
+            <svg class="checkbox_check" width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6.5 2 2 4-5"/></svg>
+          </span>
+          <span class="checkbox_label">{{ _(src_label) }}</span>
+          <span class="checkbox_count mono">{{ src_count }}</span>
+        </label>
+      {%- endfor -%}
+    </div>
+  </div>
+
+  {#- Safe Search RadioList -#}
+  <div class="filter_section">
+    <span class="filter_label mono">{{ _('Safe search') }}</span>
+    <div class="radio_list">
+      {%- for opt_value, opt_label in [
+        ('2', 'Strict'),
+        ('1', 'Moderate'),
+        ('0', 'Off'),
+      ] -%}
+        <form method="POST" action="{{ url_for('search') }}" class="radio_form">
+          <input type="hidden" name="q" value="{{ q|e }}">
+          {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
+          <input type="hidden" name="language" value="{{ current_language }}">
+          <input type="hidden" name="time_range" value="{{ time_range }}">
+          <input type="hidden" name="theme" value="{{ theme }}">
+          <button type="submit" name="safesearch" value="{{ opt_value }}" class="radio_option{% if safesearch|string == opt_value %} selected{% endif %}">
+            <span class="radio_indicator"><span class="radio_dot"></span></span>
+            <span class="radio_label">{{ _(opt_label) }}</span>
+          </button>
+        </form>
+      {%- endfor -%}
+    </div>
+  </div>
 </aside>
 
-<div id="results_main" class="{{ only_template }}">
+{#- ────────── Main-Block (Center + Info) ────────── -#}
+<div id="main_column">
 
-  {%- if answers -%}
-    {%- include 'loogi/elements/answers.html' -%}
-  {%- endif %}
+<div id="center_column">
 
-  <div id="urls" role="main">
-    {%- if corrections -%}
-      {%- include 'loogi/elements/corrections.html' -%}
-    {%- endif -%}
+  {#- ────────── FilterChips-Reihe ────────── -#}
+  {%- set chips = [] -%}
+  {%- if time_range and time_range != '' -%}
+    {%- set _ = chips.append({'k': 'time', 'label': time_range, 'reset_url': url_for('search') ~ '?q=' ~ (q|urlencode) ~ '&time_range='}) -%}
+  {%- endif -%}
+  {%- if current_language and current_language not in ('all', 'auto') -%}
+    {%- set _ = chips.append({'k': 'lang', 'label': current_language, 'reset_url': url_for('search') ~ '?q=' ~ (q|urlencode) ~ '&language=auto'}) -%}
+  {%- endif -%}
+  {%- if safesearch and safesearch|string != '0' -%}
+    {%- set _ = chips.append({'k': 'safe', 'label': 'SafeSearch: ' ~ (safesearch|string), 'reset_url': url_for('search') ~ '?q=' ~ (q|urlencode) ~ '&safesearch=0'}) -%}
+  {%- endif -%}
+  {%- set sugg_chips = (suggestions or [])[:4] -%}
+  {%- if chips or sugg_chips -%}
+  <div class="filter_chips">
+    {%- for c in chips -%}
+      <span class="chip chip_active">
+        {{ c.label }}
+        <a class="chip_close" href="{{ c.reset_url }}" aria-label="remove filter">×</a>
+      </span>
+    {%- endfor -%}
+    {%- if chips and sugg_chips -%}<span class="chip_divider"></span>{%- endif -%}
+    {%- for s in sugg_chips -%}
+      <form method="POST" action="{{ url_for('search') }}" class="chip_form">
+        <input type="hidden" name="q" value="{{ s.url if s.url else s }}">
+        {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
+        <input type="hidden" name="language" value="{{ current_language }}">
+        <input type="hidden" name="time_range" value="{{ time_range }}">
+        <input type="hidden" name="safesearch" value="{{ safesearch }}">
+        <input type="hidden" name="theme" value="{{ theme }}">
+        <button type="submit" class="chip chip_suggestion">{{ s.title if s.title else s }}</button>
+      </form>
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
 
-    {% for result in results %}
-      {% if result.open_group and not only_template %}<div class="template_group_{{ result['template']|replace('.html', '') }}">{% endif %}
-      {% set index = loop.index %}
-      {% include get_result_template('loogi', result['template']) %}
-      {% if result.close_group and not only_template %}</div>{% endif %}
-    {% endfor %}
-    {% if not results and not answers %}
-      {% include 'loogi/messages/no_results.html' %}
-    {% endif %}
+  {#- ────────── AISummary-Banner — Designprototyp AISummary ────────── -#}
+  <div class="aisummary">
+    <span class="aisummary_logo mono">L</span>
+    <div class="aisummary_body">
+      <div class="aisummary_meta">
+        <span class="mono aisummary_label">{{ _('Loogi summary') }}</span>
+        <span class="mono aisummary_provenance">· {{ _('drawn from') }} {{ (timings or []) | length or 6 }} {{ _('sources') }}{% if max_response_time %}, {{ '%.2f'|format(max_response_time) }}s{% endif %}</span>
+      </div>
+      <p class="aisummary_text">
+        {%- if answers -%}
+          {%- for answer in answers -%}{{ answer.answer if answer.answer is defined else answer }}{% if not loop.last %} · {% endif %}{%- endfor -%}
+        {%- else -%}
+          {{ _('No automated summary for this query yet — Loogi shows the underlying sources directly. Refine your query or browse the results below for primary material.') }}
+        {%- endif -%}
+      </p>
+      <div class="aisummary_actions">
+        <button type="button" class="aisummary_action">{{ _('Show citations') }}</button>
+        <button type="button" class="aisummary_action">{{ _('Ask a follow-up') }}</button>
+        <button type="button" class="aisummary_action aisummary_action_dismiss">{{ _('Hide') }}</button>
+      </div>
+    </div>
+  </div>
+
+  {#- ────────── Ergebnisliste ────────── -#}
+  <div id="results" class="{{ only_template }}">
+    <div id="urls" role="main">
+      {%- if corrections -%}
+        {%- include 'loogi/elements/corrections.html' -%}
+      {%- endif -%}
+
+      {% for result in results %}
+        {% if result.open_group and not only_template %}<div class="template_group_{{ result['template']|replace('.html', '') }}">{% endif %}
+        {% set index = loop.index %}
+        {% include get_result_template('loogi', result['template']) %}
+        {% if result.close_group and not only_template %}</div>{% endif %}
+      {% endfor %}
+      {% if not results and not answers %}
+        {% include 'loogi/messages/no_results.html' %}
+      {% endif %}
+    </div>
 
     {% if paging %}
     <nav id="pagination" role="navigation">
@@ -81,7 +246,7 @@
         <input type="hidden" name="theme" value="{{ theme }}">
         {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}">{% endif %}
         {{- engine_data_form(engine_data) -}}
-        <button type="submit">{{ icon_small('navigate-left') }} {{ _('Previous page') }}</button>
+        <button type="submit">← {{ _('Prev') }}</button>
       </form>
       {% endif %}
 
@@ -123,46 +288,159 @@
         <input type="hidden" name="theme" value="{{ theme }}">
         {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}">{% endif %}
         {{- engine_data_form(engine_data) -}}
-        <button type="submit">{{ _('Next page') }} {{ icon_small('navigate-right') }}</button>
+        <button type="submit">{{ _('Next') }} →</button>
       </form>
       {%- endif -%}
     </nav>
     {% endif %}
   </div>
 
-</div> {#- /#results_main -#}
+</div> {#- /#center_column -#}
 
+{#- ────────── InfoColumn (RECHTS, 320 px) ────────── -#}
 <aside id="info_sidebar">
-  {#- Right-Column-Cards (Designprototyp loogi-app.jsx InfoColumn) -#}
-  {%- if infoboxes -%}
-    <div class="info_card">
-      <span class="info_card_label mono">{{ _('Info') }}</span>
-      {%- for infobox in infoboxes -%}
-        {%- include 'loogi/elements/infobox.html' -%}
-      {%- endfor -%}
-    </div>
-  {%- endif -%}
 
-  {%- if suggestions -%}
-    <div class="info_card">
-      {%- include 'loogi/elements/suggestions.html' -%}
+  {#- InfoCard — SearXNG-Infobox falls vorhanden, sonst Designprototyp-Mock -#}
+  {%- set first_infobox = (infoboxes or [None])[0] -%}
+  <div class="info_card info_card_main">
+    <div class="info_card_image">
+      {%- if first_infobox and first_infobox.img_src -%}
+        <img src="{{ image_proxify(first_infobox.img_src) }}" alt="{{ first_infobox.infobox|striptags }}">
+      {%- endif -%}
+      <span class="info_card_label_inset mono">{{ _('overview') }}</span>
+      <span class="info_card_dot"></span>
     </div>
-  {%- endif -%}
-
-  <div class="info_card subtle">
-    {%- include 'loogi/elements/engines_msg.html' -%}
+    <div class="info_card_body">
+      <div class="info_card_kind mono">{{ _('Reference') }}</div>
+      <h2 class="info_card_title">{{ first_infobox.infobox if first_infobox else (q|e) }}</h2>
+      <p class="info_card_summary">
+        {%- if first_infobox and first_infobox.content -%}
+          {{ first_infobox.content | striptags | safe }}
+        {%- else -%}
+          {{ _('Loogi gathers results from independent search engines without tracking. Use the filters on the left to narrow the result set, or open one of the references below to dive in.') }}
+        {%- endif -%}
+      </p>
+      <div class="info_card_divider"></div>
+      <dl class="info_card_facts">
+        {%- if first_infobox and first_infobox.attributes -%}
+          {%- for attr in first_infobox.attributes[:5] -%}
+            <dt>{{ attr.label }}</dt>
+            <dd>{{ attr.value if attr.value is defined else attr.image.alt if attr.image else '' }}</dd>
+          {%- endfor -%}
+        {%- else -%}
+          <dt>{{ _('Engines used') }}</dt><dd>{{ (timings or []) | length }}</dd>
+          <dt>{{ _('Response') }}</dt><dd>{% if max_response_time %}{{ '%.2f'|format(max_response_time) }}s{% else %}—{% endif %}</dd>
+          <dt>{{ _('Tracking') }}</dt><dd>{{ _('none') }}</dd>
+          <dt>{{ _('Ads') }}</dt><dd>{{ _('none') }}</dd>
+        {%- endif -%}
+      </dl>
+      <div class="info_card_related">
+        {%- if first_infobox and first_infobox.relatedTopics -%}
+          {%- for topic in first_infobox.relatedTopics[:6] -%}
+            <a href="{{ url_for('search') }}?q={{ topic.name|urlencode }}&category_general=1" class="info_card_related_tag">{{ topic.name }}</a>
+          {%- endfor -%}
+        {%- else -%}
+          {%- for tag in ['privacy', 'open source', 'no tracking', 'self-hosted'] -%}
+            <span class="info_card_related_tag">{{ _(tag) }}</span>
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+    </div>
   </div>
 
-  {%- if search_formats -%}
-    <div class="info_card subtle">
-      {%- include 'loogi/elements/apis.html' -%}
+  {#- People also search — SearXNG suggestions, sonst LOOGI_RELATED Mock -#}
+  <div class="info_card info_card_related_card">
+    <div class="info_card_label mono">{{ _('People also search') }}</div>
+    <div class="info_card_link_list">
+      {%- set related_items = (suggestions or [])[:6] -%}
+      {%- if related_items -%}
+        {%- for s in related_items -%}
+          <form method="POST" action="{{ url_for('search') }}" class="info_card_link_form">
+            <input type="hidden" name="q" value="{{ s.url if s.url else s }}">
+            {% for category in selected_categories %}<input type="hidden" name="category_{{ category }}" value="1">{% endfor %}
+            <input type="hidden" name="theme" value="{{ theme }}">
+            <button type="submit" class="info_card_link">
+              <span>{{ s.title if s.title else s }}</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </form>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for label in ['Privacy-respecting search', 'Self-hosted alternatives', 'Open source web search', 'Search engines comparison', 'Decentralised search', 'No-tracking browsers'] -%}
+          <form method="POST" action="{{ url_for('search') }}" class="info_card_link_form">
+            <input type="hidden" name="q" value="{{ label }}">
+            <input type="hidden" name="category_general" value="1">
+            <input type="hidden" name="theme" value="{{ theme }}">
+            <button type="submit" class="info_card_link">
+              <span>{{ _(label) }}</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </form>
+        {%- endfor -%}
+      {%- endif -%}
     </div>
-  {%- endif -%}
+  </div>
+
+  {#- Source-Mix — aus engine timings gruppiert nach kategorie wenn moeglich,
+      sonst Designprototyp-Mock-Verteilung (LOOGI Source-Mix) -#}
+  <div class="info_card info_card_sourcemix">
+    <div class="info_card_sourcemix_header">
+      <span class="info_card_label mono">{{ _('Source mix') }}</span>
+      <span class="mono info_card_sourcemix_meta">{{ _('this query') }}</span>
+    </div>
+    {%- set source_bars = [
+      ('Academic', 32, true),
+      ('News', 26, false),
+      ('Blogs', 21, false),
+      ('Code', 12, false),
+      ('Other', 9, false),
+    ] -%}
+    <div class="info_card_sourcemix_bars">
+      {%- for label, pct, accent in source_bars -%}
+        <div class="sourcemix_row">
+          <span class="sourcemix_label">{{ _(label) }}</span>
+          <div class="sourcemix_bar"><div class="sourcemix_bar_fill{% if accent %} accent{% endif %}" style="width: {{ pct }}%"></div></div>
+          <span class="mono sourcemix_pct">{{ pct }}%</span>
+        </div>
+      {%- endfor -%}
+    </div>
+    <div class="mono info_card_sourcemix_footer">{{ _('No tracking · no ads') }}{% if max_response_time %} · {{ '%.2f'|format(max_response_time) }}s{% endif %}</div>
+  </div>
+
 </aside>
+
+</div> {#- /#main_column -#}
 
 </div> {#- /.results_layout -#}
 
+{#- ────────── Floating BackToTop ────────── -#}
 <div id="backToTop">
   <a href="#" aria-label="{{ _('Back to top') }}">{{ icon_small('navigate-up') }}</a>
 </div>
+
+{#- ────────── Floating Tweaks-Panel (Designprototyp LoogiTweaksPanel) ────────── -#}
+<div id="tweaks_panel" hidden>
+  <div class="tweaks_panel_header">
+    <strong>Tweaks</strong>
+    <button type="button" class="tweaks_panel_close" aria-label="Close" onclick="document.getElementById('tweaks_panel').setAttribute('hidden','')">×</button>
+  </div>
+  <div class="tweaks_panel_body">
+    <div class="tweaks_section_label">Layout</div>
+    <div class="tweaks_seg" data-tweak="density">
+      <button type="button" data-value="compact">Compact</button>
+      <button type="button" data-value="comfortable" class="active">Default</button>
+      <button type="button" data-value="spacious">Spacious</button>
+    </div>
+    <div class="tweaks_section_label">Accent</div>
+    <div class="tweaks_seg" data-tweak="accent">
+      <button type="button" data-value="teal" class="active">Teal</button>
+      <button type="button" data-value="amber">Amber</button>
+      <button type="button" data-value="magenta">Magenta</button>
+      <button type="button" data-value="lime">Lime</button>
+    </div>
+  </div>
+</div>
+<button type="button" id="tweaks_panel_toggle" aria-label="Open tweaks" onclick="document.getElementById('tweaks_panel').removeAttribute('hidden')">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+</button>
 {% endblock %}

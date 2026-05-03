@@ -339,37 +339,74 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
 .search_filters select:hover { color: var(--fg); border-color: var(--line); }
 .search_filters select:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
 
-/* Results-Layout — 3 Spalten: Filter-Sidebar | Results | Info-Sidebar
-   (Designprototyp loogi-app.jsx App.render). Siehe ADR 0013. */
+/* ─────────────────────────────────────────────────────────────────────────
+   Results-Layout — pixel-perfekter Port von loogi-app.jsx App-Komponente.
+   Aussen-Flex: 240px Filter-Sidebar | 1fr Main-Block.
+   Main-Block ist selbst Flex: 1fr Center-Column | 320px Info-Sidebar.
+   ───────────────────────────────────────────────────────────────────────── */
 .results_layout {
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr) 320px;
-  gap: 28px;
-  margin-top: 8px;
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
-@media (max-width: 1100px) {
-  .results_layout { grid-template-columns: 220px minmax(0, 1fr); }
-  #info_sidebar { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; padding-top: 0; }
+#main_column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 36px;
+  padding: 8px 28px 0;
 }
-@media (max-width: 760px) {
-  .results_layout { grid-template-columns: 1fr; }
-  #filters_sidebar { order: 2; }
-  #info_sidebar { order: 3; grid-template-columns: 1fr; }
-  #results_main { order: 1; }
+#center_column {
+  flex: 1;
+  min-width: 0;
 }
-
 #urls { min-width: 0; }
-#results_main { min-width: 0; }
 
-/* Filter-Sidebar (LINKS) */
-#filters_sidebar {
-  padding-top: 12px;
+@media (max-width: 1180px) {
+  #main_column { padding: 8px 20px 0; gap: 24px; }
+  #info_sidebar { display: none; }
 }
-.filters_form {
+@media (max-width: 880px) {
+  .results_layout { flex-direction: column; }
+  #filters_sidebar { width: 100% !important; border-right: 0; padding: 16px 20px; }
+  #main_column { padding: 0 20px; }
+}
+body.sidebar_collapsed #filters_sidebar { width: 56px; padding: 20px 0; }
+body.sidebar_collapsed #filters_sidebar > :not(.sidebar_header) { display: none; }
+body.sidebar_collapsed .sidebar_header .filter_label { display: none; }
+body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !important; }
+
+/* ────────── Filter-Sidebar (LINKS, 240 px) — Designprototyp Sidebar ────── */
+#filters_sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--line-soft);
+  padding: 22px 20px 40px;
   display: flex;
   flex-direction: column;
   gap: 22px;
+  transition: width .18s ease;
 }
+.sidebar_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar_collapse_btn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--fg-3);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color .12s, border-color .12s;
+}
+.sidebar_collapse_btn:hover { color: var(--fg); border-color: var(--line); }
 .filter_section {
   display: flex;
   flex-direction: column;
@@ -382,59 +419,224 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
   color: var(--fg-4);
   font-weight: 500;
 }
-.filters_form select {
-  background: var(--bg-2);
-  color: var(--fg-2);
-  border: 1px solid var(--line-soft);
-  border-radius: 8px;
-  padding: 8px 28px 8px 12px;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, var(--fg-3) 50%),
-                    linear-gradient(135deg, var(--fg-3) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
-  background-size: 5px 5px;
-  background-repeat: no-repeat;
-  width: 100%;
+
+/* RadioList — Custom Radio (Designprototyp RadioList) */
+.radio_list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
-.filters_form select:hover { color: var(--fg); border-color: var(--line); }
-.filters_form select:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
-.filters_apply {
-  margin-top: 8px;
-  padding: 8px 14px;
-  background: var(--accent-soft);
-  color: var(--fg);
-  border: 1px solid var(--accent-line);
-  border-radius: 8px;
-  font: inherit;
+.radio_form { margin: 0; padding: 0; }
+.radio_option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--fg-2);
+  font-family: inherit;
   font-size: 13px;
-  font-weight: 500;
   cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+  transition: background .12s, color .12s;
+}
+.radio_option:hover { background: var(--bg-2); }
+.radio_option.selected { color: var(--fg); background: transparent; }
+.radio_indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color .12s;
+}
+.radio_option.selected .radio_indicator { border-color: var(--accent); }
+.radio_dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background .12s;
+}
+.radio_option.selected .radio_dot { background: var(--accent); }
+.radio_label { flex: 1; }
+
+/* CheckboxList — Custom Checkbox mit Count (Designprototyp Sources) */
+.checkbox_list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.checkbox_option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--fg-2);
+  font-size: 13px;
+  transition: background .12s, color .12s;
+}
+.checkbox_option:hover { background: var(--bg-2); }
+.checkbox_option.checked { color: var(--fg); }
+.checkbox_indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .12s, border-color .12s;
+  color: oklch(0.18 0.01 195);
+}
+.checkbox_option.checked .checkbox_indicator { background: var(--accent); border-color: var(--accent); }
+.checkbox_check { opacity: 0; transition: opacity .12s; }
+.checkbox_option.checked .checkbox_check { opacity: 1; }
+.checkbox_label { flex: 1; }
+.checkbox_count {
+  font-size: 10.5px;
+  color: var(--fg-4);
+}
+
+/* ────────── FilterChips (ueber den Ergebnissen) ────────── */
+.filter_chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0 18px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--line-soft);
+  background: transparent;
+  color: var(--fg-2);
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: default;
+  text-decoration: none;
+  font-family: inherit;
   transition: background .12s, border-color .12s;
 }
-.filters_apply:hover { background: oklch(0.80 0.105 195 / 0.22); border-color: var(--accent); }
+.chip_active { border-color: var(--accent-line); background: var(--accent-soft); color: var(--fg); }
+.chip_close {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--fg-3);
+  cursor: pointer;
+  border-radius: 3px;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1;
+}
+.chip_close:hover { color: var(--fg); text-decoration: none; }
+.chip_form { margin: 0; padding: 0; display: inline; }
+.chip_suggestion { cursor: pointer; }
+.chip_suggestion:hover { color: var(--fg); border-color: var(--accent-line); background: var(--accent-soft); }
+.chip_divider {
+  width: 1px;
+  height: 18px;
+  background: var(--line-soft);
+  margin: 0 4px;
+}
 
-/* Info-Sidebar (RECHTS) — Card-Stack analog Designprototyp InfoColumn */
+/* ────────── AISummary-Banner (Designprototyp AISummary) ────────── */
+.aisummary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-top: 18px;
+  margin-bottom: 14px;
+}
+.aisummary_logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: oklch(0.18 0.01 195);
+  font-size: 13px;
+  font-weight: 700;
+}
+.aisummary_meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.aisummary_label {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.aisummary_provenance {
+  font-size: 10.5px;
+  color: var(--fg-3);
+}
+.aisummary_text {
+  margin: 0;
+  color: var(--fg);
+  font-size: 13.5px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.aisummary_actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.aisummary_action {
+  font-size: 12px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid var(--accent-line);
+  color: var(--fg);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.aisummary_action:hover { background: var(--accent-soft); }
+.aisummary_action_dismiss { margin-left: auto; border: 0; color: var(--fg-4); }
+
+/* ────────── Info-Sidebar (RECHTS, 320 px) — Designprototyp InfoColumn ────── */
 #info_sidebar {
+  width: 320px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  padding-top: 12px;
-  font-size: 13.5px;
+  padding-top: 18px;
 }
 .info_card {
   background: var(--panel);
   border: 1px solid var(--line-soft);
   border-radius: 12px;
-  padding: 14px 16px;
   overflow: hidden;
-}
-.info_card.subtle {
-  background: transparent;
-  padding: 12px 14px;
 }
 .info_card_label {
   display: block;
@@ -443,7 +645,185 @@ body.search_endpoint #clear_search:hover { background: var(--panel); color: var(
   text-transform: uppercase;
   color: var(--fg-4);
   font-weight: 500;
-  margin-bottom: 10px;
+}
+
+/* InfoCard (main) — striped image header + accent dot + facts dl + tags */
+.info_card_main { background: var(--panel); }
+.info_card_image {
+  position: relative;
+  height: 132px;
+  background:
+    repeating-linear-gradient(135deg, oklch(0.235 0.008 240) 0 12px, oklch(0.205 0.008 240) 12px 24px);
+  border-bottom: 1px solid var(--line-soft);
+  overflow: hidden;
+}
+.info_card_image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.info_card_label_inset {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  font-size: 10.5px;
+  color: var(--fg-4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.info_card_dot {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--panel);
+}
+.info_card_body {
+  padding: 16px 18px 18px;
+}
+.info_card_kind {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  margin-bottom: 6px;
+}
+.info_card_title {
+  margin: 0 0 10px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  line-height: 1.25;
+}
+.info_card_summary {
+  margin: 0;
+  color: var(--fg-2);
+  font-size: 13.5px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.info_card_divider {
+  height: 1px;
+  background: var(--line-soft);
+  margin: 16px 0 14px;
+}
+.info_card_facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 8px;
+  column-gap: 14px;
+  font-size: 12.5px;
+}
+.info_card_facts dt { color: var(--fg-3); }
+.info_card_facts dd { margin: 0; color: var(--fg); text-align: right; }
+.info_card_related {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.info_card_related_tag {
+  font-size: 11.5px;
+  padding: 3px 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  color: var(--fg-2);
+  cursor: pointer;
+  text-decoration: none;
+  background: transparent;
+  display: inline-block;
+}
+.info_card_related_tag:hover { color: var(--fg); border-color: var(--accent-line); background: var(--accent-soft); text-decoration: none; }
+
+/* People also search card */
+.info_card_related_card {
+  padding: 14px 16px 16px;
+}
+.info_card_related_card .info_card_label {
+  margin-bottom: 8px;
+}
+.info_card_link_list {
+  display: flex;
+  flex-direction: column;
+}
+.info_card_link_form { margin: 0; padding: 0; }
+.info_card_link {
+  width: 100%;
+  padding: 8px 4px;
+  font-size: 13.5px;
+  color: var(--fg-2);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: color .12s;
+}
+.info_card_link:hover { color: var(--fg); }
+.info_card_link svg { color: var(--fg-4); }
+
+/* SourceMix card */
+.info_card_sourcemix {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.info_card_sourcemix_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.info_card_sourcemix_meta {
+  font-size: 10.5px;
+  color: var(--fg-3);
+}
+.info_card_sourcemix_bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sourcemix_row {
+  display: grid;
+  grid-template-columns: 70px 1fr 32px;
+  align-items: center;
+  gap: 10px;
+}
+.sourcemix_label {
+  font-size: 12px;
+  color: var(--fg-2);
+}
+.sourcemix_bar {
+  height: 6px;
+  background: var(--bg-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.sourcemix_bar_fill {
+  height: 100%;
+  background: var(--fg-3);
+  border-radius: 3px;
+}
+.sourcemix_bar_fill.accent { background: var(--accent); }
+.sourcemix_pct {
+  font-size: 10.5px;
+  color: var(--fg-3);
+  text-align: right;
+}
+.info_card_sourcemix_footer {
+  font-size: 10.5px;
+  color: var(--fg-4);
 }
 
 /* Single result card — Designprototyp ResultItem (loogi-app.jsx) */
@@ -866,3 +1246,263 @@ body.page_with_header ul.tabs a.active {
   margin: 24px 0;
 }
 .info-page strong { color: var(--fg); font-weight: 600; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Pixel-perfect Designprototyp-Adjustments — appended in der "no-Kompromisse"-
+   Iteration. Konsolidiert Styles fuer Tabs/Categories, Result-Hover-Actions,
+   Tweaks-Panel + Pagination-Polish.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Tabs / Categories — Designprototyp TabsRow */
+#categories {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+#categories_container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  height: 44px;
+}
+.category_button {
+  position: relative;
+  height: 44px;
+  padding: 0 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--fg-3);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color .12s;
+}
+.category_button:hover { color: var(--fg); }
+.category_button.selected { color: var(--fg); font-weight: 500; }
+.category_button.selected::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.category_button .tab_icon {
+  flex-shrink: 0;
+  color: inherit;
+}
+.category_button .category_name { font-size: 13.5px; }
+.category_count {
+  font-size: 10.5px;
+  color: var(--fg-4);
+  font-weight: 400;
+}
+#categories .results_meta {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--fg-4);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Hide alte tooltip + checkbox-fallback rules, da nicht im design */
+.category_checkbox, .category .help { display: none; }
+
+/* ────────── Result-Item Hover-Actions (Designprototyp ResultItem) ────────── */
+.result {
+  position: relative;
+  padding-right: 56px;
+}
+.result_actions {
+  position: absolute;
+  top: 20px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity .15s ease;
+  pointer-events: none;
+}
+.result:hover .result_actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.result_action {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--fg-3);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .12s, color .12s;
+}
+.result_action:hover {
+  background: var(--panel);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+/* ────────── Pagination-Polish (Designprototyp Pagination/PageBtn) ────────── */
+#pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px 0 60px;
+  flex-wrap: wrap;
+}
+#pagination form { margin: 0; padding: 0; display: inline; }
+.numbered_pagination { display: inline-flex; gap: 6px; }
+#pagination .previous_page button,
+#pagination .next_page button,
+#pagination .page_number,
+#pagination .page_number_current,
+#pagination input[type="submit"],
+#pagination input[type="button"] {
+  min-width: 36px;
+  height: 32px;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--fg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#pagination .previous_page button:hover,
+#pagination .next_page button:hover,
+#pagination .page_number:hover,
+#pagination input[type="submit"]:hover {
+  color: var(--fg);
+  background: var(--panel);
+  border-color: var(--line);
+}
+#pagination .page_number_current {
+  background: var(--accent-soft);
+  color: var(--fg);
+  border-color: var(--accent-line);
+  cursor: default;
+}
+
+/* ────────── Floating Tweaks-Panel (Designprototyp LoogiTweaksPanel) ────────── */
+#tweaks_panel_toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 30;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  color: var(--fg-3);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color .12s, background .12s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+#tweaks_panel_toggle:hover { color: var(--fg); background: var(--panel-2); }
+
+#tweaks_panel {
+  position: fixed;
+  right: 16px;
+  bottom: 60px;
+  z-index: 31;
+  width: 280px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  color: var(--fg-2);
+  overflow: hidden;
+}
+#tweaks_panel[hidden] { display: none; }
+.tweaks_panel_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 8px 10px 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.tweaks_panel_header strong { font-size: 12px; font-weight: 600; color: var(--fg); }
+.tweaks_panel_close {
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: 0;
+  color: var(--fg-3);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.tweaks_panel_close:hover { background: var(--bg-2); color: var(--fg); }
+.tweaks_panel_body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tweaks_section_label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  padding: 4px 0 0;
+}
+.tweaks_seg {
+  display: flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--bg-2);
+  gap: 0;
+}
+.tweaks_seg button {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  color: var(--fg-3);
+  font: inherit;
+  font-weight: 500;
+  font-size: 11.5px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.tweaks_seg button:hover { color: var(--fg); }
+.tweaks_seg button.active {
+  background: var(--panel);
+  color: var(--fg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Density classes via JS */
+body.density_compact #center_column { font-size: 86%; }
+body.density_spacious #center_column { font-size: 110%; }
+

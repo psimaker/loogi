@@ -9,10 +9,12 @@ Der Designprototyp (`loogi-search-design/project/loogi-app.jsx` → Komponente
 `App`) zeigt die Results-Seite als drei-spaltiges Layout:
 
 * **Links (240 px)**: Sidebar mit Filtern (Time, Language, Region, Sources,
-  Safe search) als vertikale Liste.
-* **Mitte (1fr)**: Suchergebnisse + Pagination.
-* **Rechts (320 px)**: Info-Spalte mit Wikipedia/Knowledge-Card,
-  "People also search" und Quellen-Mix.
+  Safe search) als RadioList- und Checkbox-Stack, plus Collapse-Button im
+  Sidebar-Header.
+* **Mitte (1fr)**: FilterChips-Reihe + AISummary-Banner +
+  Suchergebnisse + Pagination.
+* **Rechts (320 px)**: Info-Spalte mit Knowledge-Card (striped Image-Header,
+  Facts-DL, Related-Tags), "People also search"-Liste und Source-Mix-Bars.
 
 Bisher (vor dieser ADR) war das Layout zwei-spaltig:
 
@@ -27,98 +29,129 @@ entfernt vom Designprototyp.
 CLAUDE.md Hard rule #1 sagt: "Design ist hardcoded und darf nicht veraendert
 werden. Aenderungen daran nur auf explizite User-Anforderung." — das ist hier
 gegeben (Anweisung "design soll strikt nach loogi-search-design ausgerichtet
-sein").
+sein, 1:1 ohne Kompromisse").
 
 ## Decision
 
-Die Results-Seite wird auf ein 3-Spalten-CSS-Grid umgestellt
-(`240px minmax(0, 1fr) 320px`):
+Die Results-Seite wird auf ein **nested Flex-Layout** umgestellt, wie es der
+Designprototyp vorgibt:
 
-* **`#filters_sidebar`** (links, 240 px): Eigene `<form method="POST"
-  action="/search">`, die `q` + `selected_categories` + `theme` als hidden
-  inputs traegt und die bestehenden Filter-Templates
-  (`filters/time_range.html`, `filters/languages.html`,
-  `filters/safesearch.html`) als `<select>`-Steuerelemente einschliesst,
-  jeweils mit Mono-Uppercase-Section-Label dariiber. Submit via
-  `Apply`-Button.
-* **`#results_main`** (Mitte, 1fr): unveraendert — Answers, `#urls`-Liste,
-  Pagination.
-* **`#info_sidebar`** (rechts, 320 px): SearXNG-Sidebar-Inhalte
-  (Infobox, Suggestions, Engines-Msg, APIs) jeweils in `.info_card`
-  gewrappt — `panel`-Background, 1px `line-soft`-Border, 12px Radius,
-  14×16px Padding, 18px Gap zwischen Cards. Engines-Msg + APIs nutzen
-  Variant `.info_card.subtle` (transparent, kompakter) weil sekundaer.
+* Aussen-Flex: `[240px Filter-Sidebar | 1fr Main-Block]`, `max-width: 1400px`
+  zentriert.
+* Main-Block ist selbst Flex: `[1fr Center-Column | 320px Info-Sidebar]`
+  mit `gap: 36px`.
+
+Komponenten:
+
+* **`#filters_sidebar`** (links, 240 px): Custom RadioList- und
+  Checkbox-Controls (visuell wie Designprototyp `RadioList` /
+  `Checkbox`), Collapse-Button im `.sidebar_header`. Filter-Sections
+  fuer Time, Language, Region, Sources, Safe search. Time/Language/SafeSearch
+  binden an SearXNGs Form (`time_range`, `language`, `safesearch` POST
+  zu `/search`); Region und Sources sind visuell-only (kein
+  SearXNG-Backing) mit den Designprototyp-Mock-Werten aus `loogi-data.jsx`
+  `LOOGI_REGIONS` / `LOOGI_SOURCES`.
+* **`#center_column`** (Mitte, 1fr): FilterChips-Reihe (aktive Filter +
+  Suggestion-Chips), AISummary-Banner (immer gerendert, Inhalt aus
+  SearXNG `answers` falls vorhanden, sonst Designprototyp-Placeholder),
+  Result-Items (`.result` mit Hover-Actions-Spalte rechts), Pagination.
+* **`#info_sidebar`** (rechts, 320 px): drei Cards exakt wie Designprototyp
+  `InfoColumn`:
+    * `.info_card_main` mit striped Image-Header (`background:
+      repeating-linear-gradient`), Accent-Dot, Kind-Label, H2-Titel,
+      Summary, Divider, Facts-DL, Related-Tags. Inhalt aus SearXNG
+      `infoboxes[0]` falls vorhanden, sonst Mock aus `LOOGI_INFOCARD`.
+    * `.info_card_related_card` ("People also search") mit Pfeil-Links.
+      Inhalt aus SearXNG `suggestions` falls vorhanden, sonst Mock aus
+      `LOOGI_RELATED`.
+    * `.info_card_sourcemix` mit Bar-Chart pro Quelle. Werte sind die
+      Designprototyp-Mock-Verteilung (Academic 32 % / News 26 % / ...);
+      eine echte Engine-zu-Source-Klassifikation gibt es noch nicht.
 
 `.search_filters`-Zeile in `search.html` (inline-Filters ueber den
 Ergebnissen) wird ersatzlos entfernt — die Filter leben jetzt
 ausschliesslich in der linken Sidebar.
 
+Tabs-Row (`categories.html`) wird auf die 6 Designprototyp-Tabs reduziert
+(Web/Images/News/Videos/Papers/Maps) mit den Designprototyp-Icons und
+Mock-Counts; die SearXNG-default-Kategorien `music` / `it` / `files` werden
+in der Tabs-Row nicht angezeigt (Engines bleiben unter den verbleibenden
+Tabs erreichbar via Engine-Auswahl).
+
+Der **Tweaks-Panel** (Designprototyp `LoogiTweaksPanel`) wird als floating
+Panel unten-rechts gerendert, mit Density (Compact/Default/Spacious) und
+Accent (Teal/Amber/Magenta/Lime). State persistiert via `localStorage`,
+Live-Update via CSS-Variablen-Swap auf `:root` (Accent) und Body-Class
+(Density). Sidebar-Collapse-Status persistiert ebenfalls.
+
 Responsive-Breakpoints:
 
-* `<= 1100 px` → 2-Spalten (Filter | Main), Info-Sidebar fliesst unten in
-  einer Auto-Fit-Reihe.
-* `<= 760 px` → 1-Spalte, Filter unter den Ergebnissen.
+* `<= 1180 px` → Info-Sidebar wird ausgeblendet, Filter-Sidebar bleibt.
+* `<= 880 px` → Layout flippt auf vertikal, Filter-Sidebar wandert ueber
+  die Ergebnisse.
 
 ## Alternatives considered
 
 * **Filter inline ueber den Ergebnissen lassen** — minimalinvasiv, aber
   matched den Designprototyp nicht. Verworfen.
 
-* **Filter im Top-Bar (neben dem Such-Input)** — kein Designprototyp-Hint
-  in diese Richtung; die TopBar des Designs ist bewusst minimal (Logo +
-  Such-Input). Verworfen.
+* **Filter-Form an `form#search` koppeln (CSS-Grid `display: contents` oder
+  `grid-area`)** — funktioniert prinzipiell, koppelt aber Form-Layout an
+  Grid-Struktur und macht Submit-Verhalten unintuitiv (jeder Filter-Click
+  submittet das gesamte Suchformular). Separate Filter-Sub-Formulare mit
+  expliziten `<button type="submit">`-Optionen sind klarer.
 
-* **Region- und Sources-Filter implementieren** — der Designprototyp zeigt
-  diese als Kategorien. SearXNG hat aber keine 1:1-Entsprechung:
-  *Region* nicht im Stack vorgesehen (nur `language`), *Sources* (Academic
-  / News / Code / Blogs / Books / Discussions) liesse sich nur ueber eine
-  custom Engine-Klassifizierung umsetzen — aufwaendig und ohne sauberen
-  Daten-Owner. Bewusste Auslassung; Filter-Sidebar zeigt nur die drei
-  funktional verfuegbaren Optionen. Doku: hier.
-
-* **AISummary-Banner (oberhalb der Ergebnisse) implementieren** — der
-  Designprototyp hat einen Akzent-umrandeten "Loogi summary"-Block.
-  SearXNG generiert aber keine eigenen Zusammenfassungen; wuerde einen
-  externen LLM-Aufruf brauchen. Verworfen — out of scope dieser ADR.
-
-* **Source-Mix-Bars + "People also search"-Card** — Source-Mix braucht
-  Engine-Klassifizierung (siehe Region/Sources oben), "People also search"
-  braucht related-query-Daten die SearXNG nicht out-of-the-box liefert.
+* **`<select>`-basierte Filter** — funktional schlanker, matched aber den
+  Designprototyp nicht (der Custom-Radio-Buttons mit Dot-Indicator hat).
   Verworfen.
 
-* **Filter im Haupt-`form#search` lassen, via CSS-Grid `display: contents`
-  oder `grid-area` umpositionieren** — funktioniert prinzipiell, koppelt
-  aber Form-Layout an Grid-Struktur und macht das Submit-Verhalten
-  unintuitiv (ein Filter-Click submitted das gesamte Suchformular). Eine
-  separate `<form>` in der Filter-Sidebar mit explizitem Apply-Button ist
-  klarer.
+* **Region/Sources echt mit SearXNG verdrahten** (Region → Language-Region,
+  Sources → Engine-Klassifikation): braucht eigenes Datenmodell und
+  Engine-Mapping (Academic = arxiv/pubmed/scholar/..., News = google
+  news/brave news/...). Out of scope dieser ADR — wird in einer eigenen
+  ADR adressiert wenn die Klassifikation gebraucht wird. Bis dahin sind
+  Region und Sources visuell vorhanden, aber non-binding.
+
+* **AISummary echte LLM-Integration**: braucht externen LLM-Aufruf pro
+  Query (DeepSeek, OpenAI, ...). Out of scope dieser ADR. AISummary
+  rendert vorerst SearXNG `answers` falls vorhanden (Calculator-Plugin,
+  Self-Info-Plugin etc.) oder eine generische Erklaerung.
+
+* **Source-Mix echte Engine-zu-Kategorie-Klassifikation**: braucht das
+  gleiche Mapping wie Sources oben. Bars zeigen vorerst die
+  Designprototyp-Verteilung als Visual-Placeholder; die Footer-Zeile
+  ("No tracking · ...") nutzt die echte `max_response_time`.
 
 ## Consequences
 
 * **Positiv**:
-    * Visuell strikt am Designprototyp ausgerichtet (Filter links, Info
-      rechts).
-    * Filter sind dauerhaft sichtbar — der User kann waehrend des Scrollens
-      durch Ergebnisse jederzeit Filter aendern, ohne nach oben zu scrollen.
-    * `.info_card`-Container ist generisch — neue Sektionen lassen sich
-      einfach in `info_sidebar` einsetzen, ohne weitere Styling-Arbeit.
-    * Engine-Messages sind als `.info_card.subtle` weniger aufdringlich
-      (transparent), bleiben aber zugaenglich.
+    * Visuell strikt am Designprototyp ausgerichtet — alle 12+ Komponenten
+      des Mockups sind im Output vorhanden.
+    * Filter sind dauerhaft sichtbar (mit Collapse-Option), keine
+      Inline-Filter-Reihe mehr ueber den Ergebnissen.
+    * Tweaks-Panel + Sidebar-Collapse persistent ueber Sessions
+      (`localStorage`).
+    * `.info_card_main` / `.info_card_related_card` / `.info_card_sourcemix`
+      sind klar voneinander getrennte Components; spaetere Wiring-Arbeit
+      (echte LLM-Summary, echte Engine-Klassifikation) bleibt lokal.
 
 * **Negativ / Trade-Off**:
-    * Filter-Apply braucht jetzt einen expliziten Klick (kein Auto-Submit
-      bei `<select>`-Change). Etwas mehr Reibung, dafuer transparenter.
-    * Auf schmalen Viewports (< 1100 px) wird das Layout 2-spaltig, die
-      Info-Sidebar wandert nach unten — Designprototyp ist auf 1440 px
-      Viewport ausgelegt, fuer schmaler ist responsive ohnehin nicht
-      Designvorgabe sondern Pflichtanforderung des Browsers.
-    * Region- + Sources-Filter sowie AISummary + "People also search" +
-      Source-Mix sind im Designprototyp vorhanden, hier aber NICHT
-      portiert (siehe Alternatives). Wenn diese spaeter gewuenscht werden,
-      brauchen sie eigene ADRs (Datenmodell-Diskussion).
+    * Region und Sources sind visuell-only — Klick aendert lokalen
+      Active-State, aber sendet kein zusaetzliches Filter-Kriterium an
+      SearXNG. User koennte das als kaputt empfinden, falls nicht klar
+      kommuniziert. Sollte in einer User-doc / FAQ erwaehnt werden.
+    * Source-Mix-Bars zeigen Mock-Daten — die Prozentwerte sind nicht
+      wahr fuer die aktuelle Suche. Tooltip / kleiner "demo"-Hinweis
+      koennte das mildern.
+    * SearXNGs default-Kategorien `music` / `it` / `files` sind in der
+      Tabs-Row nicht erreichbar; wer dort sucht, muss `/search?
+      category_music=1` direkt aufrufen oder Preferences nutzen.
+    * Sprache-Filter ist auf 5 Optionen reduziert (statt 100+). Andere
+      Sprachen lassen sich nicht in der Sidebar waehlen — nur via
+      `/preferences`.
 
-* **Folgeaufgaben**:
-    * Wenn LLM-gestuetzte Antworten dazukommen sollen → eigene ADR fuer
-      AISummary-Block.
-    * Wenn Engine-Klassifizierung gebaut wird → eigene ADR fuer Source-Mix
-      + Sources-Filter.
+* **Folgeaufgaben** (eigene ADRs wenn angegangen):
+    * Engine-Klassifikation fuer Sources- und Source-Mix-Filter.
+    * LLM-Integration fuer AISummary.
+    * Ggf. Tabs-Row erweitern (music/it/files), wenn der Designprototyp
+      fortgeschrieben wird.
