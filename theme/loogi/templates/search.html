@@ -1,5 +1,5 @@
 {%- from 'loogi/icons.html' import icon_big -%}
-<form id="search" method="{{ method or 'POST' }}" action="{{ url_for('search') }}" role="search">
+<form id="search" method="{{ method or 'GET' }}" action="{{ url_for('search') }}" role="search">
   {#- Topbar: 60px high, padding 0 28px, flex gap 24, [Logo | SearchBox flex:1 | Lang margin-left:auto] -#}
   <div id="search_header">
     <a id="search_logo" href="{{ url_for('index') }}" tabindex="0" title="{{ _('Display the front page') }}">

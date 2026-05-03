@@ -823,10 +823,11 @@ main.page_with_header ul.tabs a.active {
 }
 #pagination form { margin: 0; padding: 0; display: inline; }
 .numbered_pagination { display: inline-flex; gap: 6px; }
+/* Pagination buttons — nur die Input/Button-Elemente, NICHT die wrapping
+   <form class="page_number">. (Sonst rendern Browser den form-Wrapper UND
+   den input mit jeweils einem Box-Style → 2 Kaesten pro Zahl.) */
 #pagination .previous_page button,
 #pagination .next_page button,
-#pagination .page_number,
-#pagination .page_number_current,
 #pagination input[type="submit"],
 #pagination input[type="button"] {
   appearance: none;
@@ -849,13 +850,12 @@ main.page_with_header ul.tabs a.active {
 }
 #pagination .previous_page button:hover,
 #pagination .next_page button:hover,
-#pagination .page_number:hover,
 #pagination input[type="submit"]:hover {
   color: var(--fg);
   background: var(--panel);
   border-color: var(--line);
 }
-#pagination .page_number_current {
+#pagination input.page_number_current {
   background: var(--accent-soft);
   color: var(--fg);
   border-color: var(--accent-line);
