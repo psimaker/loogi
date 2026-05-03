@@ -11,16 +11,41 @@
   // (autocomplete-Box bleibt sonst sichtbar mit leerer Border).
   document.documentElement.classList.replace('no-js', 'js');
 
-  // Search focus shortcut
+  // Search focus shortcut + Auto-Type: jeder Buchstaben/Ziffer/Zeichen-Tastendruck
+  // ausserhalb eines anderen Inputs fokussiert die Suchleiste und setzt das
+  // Zeichen ein. Funktioniert auf Landingpage UND Ergebnisseite.
+  function isEditableTarget(el) {
+    if (!el) return false;
+    var tag = el.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+    if (el.isContentEditable) return true;
+    return false;
+  }
   document.addEventListener('keydown', function (e) {
+    var q = document.getElementById('q');
+    if (!q) return;
+
+    // Cmd/Ctrl-K: explicit focus + select
     if ((e.metaKey || e.ctrlKey) && e.key && e.key.toLowerCase() === 'k') {
-      var q = document.getElementById('q');
-      if (q) {
-        e.preventDefault();
-        q.focus();
-        q.select();
-      }
+      e.preventDefault();
+      q.focus();
+      q.select();
+      return;
     }
+
+    // Auto-Type: ueberspringen wenn user bereits in einem Input/Textarea ist
+    if (isEditableTarget(document.activeElement)) return;
+    // Modifier-Tasten (ausser Shift fuer Grossbuchstaben) ignorieren
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    // Nur druckbare Einzelzeichen (Buchstaben, Ziffern, Symbole, Leerzeichen)
+    if (e.key.length !== 1) return;
+
+    e.preventDefault();
+    q.focus();
+    q.value = q.value + e.key;
+    // Cursor ans Ende setzen
+    var pos = q.value.length;
+    q.setSelectionRange(pos, pos);
   });
 
   // Back-to-top sichtbar ab 600px Scroll

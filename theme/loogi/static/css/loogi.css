@@ -41,8 +41,11 @@ body {
 ::selection { background: var(--accent-soft); color: var(--fg); }
 .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 a { color: var(--link); text-decoration: none; }
-a:visited { color: var(--visited); }
+a:visited { color: inherit; }
 a:hover { text-decoration: underline; }
+
+/* Defensive: kein horizontales Scrollen, egal was Inhalte tun. */
+html, body { overflow-x: hidden; }
 
 /* Icons (SVGs aus icons.html, currentColor) */
 .sxng-icon-set, .sxng-icon-set-big, .sxng-icon-set-small {
@@ -146,14 +149,14 @@ body.results_endpoint #search {
   background: color-mix(in oklab, var(--bg) 92%, transparent);
   -webkit-backdrop-filter: saturate(140%) blur(12px);
   backdrop-filter: saturate(140%) blur(12px);
-  margin: 0 -28px 0;
+  margin: 0;
 }
 body.results_endpoint #search_header {
   display: flex;
   align-items: center;
   gap: 24px;
   padding: 0 28px;
-  height: 60px;
+  height: 72px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -164,7 +167,7 @@ body.results_endpoint #search_logo {
   flex-shrink: 0;
 }
 body.results_endpoint #search_logo img {
-  height: 32px;
+  height: 40px;
   width: auto;
   display: block;
 }
@@ -177,12 +180,12 @@ body.results_endpoint .search_box {
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 40px;
-  padding: 0 16px 0 16px;
+  height: 48px;
+  padding: 0 16px;
   background: var(--bg-2);
   border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  max-width: 720px;
+  border-radius: 14px;
+  max-width: 800px;
   transition: border-color .15s, box-shadow .15s;
 }
 body.results_endpoint .search_box:focus-within {
@@ -197,7 +200,8 @@ body.results_endpoint #q {
   outline: 0;
   color: var(--fg);
   font: inherit;
-  font-size: 15px;
+  font-size: 15.5px;
+  letter-spacing: 0.005em;
 }
 /* Autocomplete (Designprototyp hat keine Send/Clear-Buttons in Suchbox —
    Buttons bleiben im DOM fuer sxng-core JS-Hooks, sind aber via display:none
@@ -488,13 +492,13 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 20px;
-  padding: 18px 0;
+  padding: 22px 0;
   border-bottom: 1px solid var(--line-soft);
 }
 .result_main {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 .result:last-child { border-bottom: 0; }
@@ -530,7 +534,7 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
 .result .url_wrapper span { color: var(--fg-3); }
 .result h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 500;
   line-height: 1.35;
   letter-spacing: -0.005em;
@@ -541,8 +545,8 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
 .result .content {
   margin: 0;
   color: var(--fg-2);
-  font-size: 13.5px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.6;
   text-wrap: pretty;
   min-width: 0;
 }
@@ -644,7 +648,11 @@ footer {
   color: var(--fg-4);
 }
 footer .spacer { flex: 1; }
-footer a { color: var(--fg-3); text-decoration: none; }
+/* Visited-State explizit ueberschreiben — sonst wuerde das globale
+   a:visited (color:inherit) die Footer-Links auf var(--fg-4) setzen
+   (Footer-color), was sie dunkler als ungelesen var(--fg-3) macht. */
+footer a,
+footer a:visited { color: var(--fg-3); text-decoration: none; }
 footer a:hover { color: var(--fg); text-decoration: none; }
 
 /* Errors */
