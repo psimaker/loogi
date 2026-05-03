@@ -1006,5 +1006,41 @@ main.page_with_header ul.tabs a.active {
              max(16px, env(safe-area-inset-right));
     gap: 24px;
   }
+
+  /* ───── Pagination Touch-Targets (Apple HIG ≥44px) ───── */
+  #pagination {
+    gap: 8px;
+    padding: 24px max(12px, env(safe-area-inset-left))
+             calc(env(safe-area-inset-bottom) + 60px)
+             max(12px, env(safe-area-inset-right));
+  }
+  #pagination .previous_page button,
+  #pagination .next_page button,
+  #pagination input[type="submit"],
+  #pagination input[type="button"] {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 14px;
+    font-size: 13.5px;
+  }
+
+  /* ───── Footer: zentriert, wrap, safe-area-inset-bottom ───── */
+  footer {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    padding: 16px max(16px, env(safe-area-inset-right))
+             calc(env(safe-area-inset-bottom) + 16px)
+             max(16px, env(safe-area-inset-left));
+  }
+  footer .spacer { display: none; }
+}
+
+/* ────────── Tablet (641–1023 px) ────────── */
+/* Layout-Konzept (240 Sidebar + Center) bleibt; nur Padding kompakter
+   damit auf 768 px iPad-portrait noch genug Platz fuer Content bleibt. */
+@media (max-width: 1023px) and (min-width: 641px) {
+  .results_layout { padding: 0 16px; }
+  #main_column { padding: 20px 20px 0; }
 }
 

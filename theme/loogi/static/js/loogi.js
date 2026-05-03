@@ -35,6 +35,10 @@
 
     // Auto-Type: ueberspringen wenn user bereits in einem Input/Textarea ist
     if (isEditableTarget(document.activeElement)) return;
+    // Auf Touch-Geraeten (Phone/Tablet) Auto-Type komplett aus —
+    // mobile Keyboards triggern keydown nicht zuverlaessig und der
+    // erzwungene Focus oeffnet das Keyboard ungewollt.
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return;
     // Modifier-Tasten (ausser Shift fuer Grossbuchstaben) ignorieren
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     // Nur druckbare Einzelzeichen (Buchstaben, Ziffern, Symbole, Leerzeichen)
@@ -65,9 +69,15 @@
     }
   }
 
-  // Filter-Sidebar collapse persistence
+  // Filter-Sidebar collapse persistence.
+  // Tablet (641–1023 px) ohne gespeicherte Pref: default collapsed —
+  // 240 px Sidebar nimmt auf iPad-portrait sonst zu viel Breite weg.
+  // User-Toggle ueberschreibt persistent (siehe Klick-Handler weiter unten).
   try {
-    if (localStorage.getItem('loogi_sidebar_collapsed') === '1') {
+    var collapsedPref = localStorage.getItem('loogi_sidebar_collapsed');
+    var w = window.innerWidth;
+    var tabletDefault = (collapsedPref === null && w > 640 && w <= 1023);
+    if (collapsedPref === '1' || tabletDefault) {
       document.body.classList.add('sidebar_collapsed');
     }
   } catch (_) {}
