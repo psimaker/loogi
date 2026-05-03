@@ -975,8 +975,11 @@ main.page_with_header ul.tabs a.active {
   body.drawer_open #filters_sidebar,
   body.drawer_open.sidebar_collapsed #filters_sidebar { transform: translateX(0); }
 
-  /* Overlay aktivieren (display:none → block damit Transition greift) */
-  #drawer_overlay { display: block; }
+  /* Overlay aktivieren (display:none → block damit Transition greift).
+     touch-action:none verhindert dass Swipe-Gesten auf der Overlay-Flaeche
+     den Body-Scroll dahinter beeinflussen — Tap (Click-to-close) bleibt
+     funktional, da Click-Events nicht von touch-action gefiltert werden. */
+  #drawer_overlay { display: block; touch-action: none; }
   body.drawer_open #drawer_overlay { opacity: 1; pointer-events: auto; }
 
   /* Collapse-Btn in der Sidebar ist auf Phone redundant (Drawer-Pattern hat

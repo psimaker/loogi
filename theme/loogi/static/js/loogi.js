@@ -92,35 +92,19 @@
   // toggelt CSS-Transform (siehe loogi.css @media max-width:640px).
   // Schliessen via: Hamburger erneut, Overlay-Tap, ESC, Resize > 640.
   //
-  // Body-Scroll-Lock per position:fixed-Pattern statt overflow:hidden —
-  // letzteres triggert auf iOS Safari einen Scroll-Container-Wechsel der
-  // nach dem Schliessen einen schwarzen Restbalken am Bottom hinterlassen
-  // kann (URL-Bar-State steckt fest, dvh-Hoehe verkuerzt sich permanent).
-  // Mit position:fixed + top:-scrollY bleibt der Body genau dort wo er
-  // war, und nach restore() scrollen wir die Original-Position wieder her.
+  // KEIN Body-Scroll-Lock — auf iOS Safari triggert jede Aenderung des
+  // Body-Scroll-Container-Status (overflow:hidden ODER position:fixed)
+  // ein Wieder-Einblenden der unteren URL-Bar, die danach als schwarzer
+  // Streifen am Display-Bottom haengen bleibt. Drawer + Overlay decken
+  // visuell sowieso alles ab; ein Body-Scroll dahinter ist unsichtbar.
+  // Touch-Action:none auf dem Overlay verhindert dass Swipes auf der
+  // sichtbaren Overlay-Flaeche zu Body-Scroll fuehren.
   var drawerToggle = document.getElementById('drawer_toggle');
   var drawerOverlay = document.getElementById('drawer_overlay');
-  var savedScrollY = 0;
   function setDrawerOpen(open) {
     var isOpen = document.body.classList.contains('drawer_open');
     if (open === isOpen) return;
-    if (open) {
-      savedScrollY = window.scrollY || window.pageYOffset || 0;
-      document.body.style.position = 'fixed';
-      document.body.style.top = '-' + savedScrollY + 'px';
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.width = '100%';
-      document.body.classList.add('drawer_open');
-    } else {
-      document.body.classList.remove('drawer_open');
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.width = '';
-      window.scrollTo(0, savedScrollY);
-    }
+    document.body.classList.toggle('drawer_open', open);
     if (drawerToggle) drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
   if (drawerToggle) {

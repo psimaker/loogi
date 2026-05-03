@@ -75,6 +75,10 @@
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex,nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  {#- theme-color: iOS Safari toent die URL-Bar in dieser Farbe statt mit
+      browser-default schwarz/weiss → kein abrupter Kontrast mehr zur Page.
+      Wert = LOOGI --bg (oklch 0.155 0.005 240) als sRGB-Hex. -#}
+  <meta name="theme-color" content="#1f2127">
   <title>{% block title %}{% endblock %}{{ instance_name }}</title>
   {% block meta %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='themes/loogi/css/loogi.css') }}" type="text/css" media="screen">
