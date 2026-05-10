@@ -15,9 +15,9 @@ A privacy-focused web search engine — running in production at [**loogi.ch**](
 LOOGI is a single-purpose deployment of [SearXNG](https://github.com/searxng/searxng) — same engine, same template machinery, same Python runtime. What makes it LOOGI:
 
 - one fixed visual identity (a `loogi/` Jinja theme with an OKLCH palette, no theme switching, no upstream-default rendering)
-- a curated engine list that's actually maintained — see [ADR 0006](docs/adr/0006-engine-auswahl-praezision.md), [ADR 0015](docs/adr/0015-wikipedia-aus-general-engines-entfernen.md), [ADR 0016](docs/adr/0016-defekte-engines-und-brave-api.md) for the latest cleanups
+- a curated engine list that's actually maintained — see [ADR 0006](docs/adr/0006-engine-selection-precision.md), [ADR 0015](docs/adr/0015-wikipedia-out-of-general-engines.md), [ADR 0016](docs/adr/0016-broken-engines-and-brave-api.md) for the latest cleanups
 - legal pages (privacy + terms) in five locales, surfaced via a small Dockerfile patch — see [ADR 0011](docs/adr/0011-legal-pages-via-infopage-patch.md)
-- self-hosted-friendly defaults: NPM-aware trusted proxies, no public ports ([ADR 0008](docs/adr/0008-keine-ports-exposed-via-npm.md)), build-time config baking ([ADR 0003](docs/adr/0003-eigenes-docker-image-statt-volume-mounts.md))
+- self-hosted-friendly defaults: NPM-aware trusted proxies, no public ports ([ADR 0008](docs/adr/0008-no-ports-exposed-via-npm.md)), build-time config baking ([ADR 0003](docs/adr/0003-own-docker-image-vs-volume-mounts.md))
 
 This repo is the source. Deployment is part of my [homelab](https://github.com/psimaker/homelab) — currently Docker Compose, migrating to Kubernetes via Flux as the platform tier comes online.
 
@@ -25,7 +25,7 @@ This repo is the source. Deployment is part of my [homelab](https://github.com/p
 
 A custom Docker image (`FROM searxng/searxng:latest`) that bakes the LOOGI Jinja theme and a curated `settings.yml` into the layer; Compose orchestrates `searxng` + `valkey` (limiter cache); TLS and routing handled externally by Nginx Proxy Manager.
 
-The "why" behind every non-trivial decision lives in [`docs/adr/`](docs/adr/README.md) — 16 ADRs in MADR format, **written in German**.
+The "why" behind every non-trivial decision lives in [`docs/adr/`](docs/adr/README.md) — 16 ADRs in MADR format.
 
 ## Setup
 
@@ -33,7 +33,7 @@ Prerequisites:
 
 - Docker + `docker compose` v2
 - An external Docker bridge network named `proxy-net` (Nginx Proxy Manager creates it; or `docker network create proxy-net`)
-- An external network `loogi-net` with subnet `172.30.0.0/24` ([ADR 0012](docs/adr/0012-bypass-netz-fuer-lokale-clients.md)):
+- An external network `loogi-net` with subnet `172.30.0.0/24` ([ADR 0012](docs/adr/0012-bypass-network-for-local-clients.md)):
   ```sh
   docker network create --subnet=172.30.0.0/24 loogi-net
   ```
@@ -93,7 +93,7 @@ docker compose build        # bakes the LOOGI theme + config on top
 docker compose up -d
 ```
 
-On SearXNG major upgrades: diff the upstream default `settings.yml` and `searx/templates/simple/` against ours — new variables or required templates may have landed. See [ADR 0002](docs/adr/0002-design-hardcoded-via-eigenes-theme.md) and [ADR 0009](docs/adr/0009-config-deep-merge-statt-vollersatz.md).
+On SearXNG major upgrades: diff the upstream default `settings.yml` and `searx/templates/simple/` against ours — new variables or required templates may have landed. See [ADR 0002](docs/adr/0002-design-hardcoded-via-own-theme.md) and [ADR 0009](docs/adr/0009-config-deep-merge-vs-full-override.md).
 
 ## Repository layout
 
@@ -108,14 +108,12 @@ On SearXNG major upgrades: diff the upstream default `settings.yml` and `searx/t
 ├── theme/loogi/
 │   ├── templates/         # Jinja templates → /usr/local/searxng/searx/templates/loogi/
 │   └── static/            # CSS, JS, images → /usr/local/searxng/searx/static/themes/loogi/
-└── docs/adr/              # 16 architecture decisions (MADR, German)
+└── docs/adr/              # 16 architecture decisions (MADR format)
 ```
 
 ## Documentation
 
-Architecture Decision Records (ADRs) live in [`docs/adr/`](docs/adr/) — German, MADR format. They cover SearXNG selection, the bake-into-image pattern, theme strategy, engine curation (with rationale for which engines were dropped and when), legal pages, the bypass-network for local consumers, and the mobile layout.
-
-If you don't read German and want a summary of any specific ADR, open an issue.
+Architecture Decision Records (ADRs) live in [`docs/adr/`](docs/adr/) in MADR format. They cover SearXNG selection, the bake-into-image pattern, theme strategy, engine curation (with rationale for which engines were dropped and when), legal pages, the bypass-network for local consumers, and the mobile layout.
 
 ## Acknowledgements
 
