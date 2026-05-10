@@ -6,7 +6,13 @@ name: loogi
 
 services:
   searxng:
-    build: .
+    build:
+      context: .
+      args:
+        # Brave Search API-Key — wird zur Build-Zeit in /etc/searxng/settings.yml
+        # gepatched. Liegt in lokaler .env (gitignored). Leer-Default = Engine
+        # deaktiviert sich beim Init (kein Crash). Siehe ADR 0016.
+        BRAVE_API_KEY: ${BRAVE_API_KEY:-}
     image: loogi:latest
     container_name: loogi
     hostname: loogi

@@ -11,6 +11,62 @@
   // (autocomplete-Box bleibt sonst sichtbar mit leerer Border).
   document.documentElement.classList.replace('no-js', 'js');
 
+  // ─── Debug-Overlay (gated by ?debug=1) ──────────────────────────
+  // Live-Telemetry fuer iOS-Safari-Viewport-Diagnose. Zeigt innerHeight,
+  // visualViewport.height/offsetTop, scrollY etc. plus letzte 8 Events.
+  // Aktivierung: ?debug=1 an die URL haengen. Auf Prod-Pages ohne den
+  // Param wird nichts gerendert — kein Performance-Impact.
+  (function setupDebug() {
+    try {
+      if (!/[?&]debug=1\b/.test(location.search)) return;
+    } catch (_) { return; }
+    var ovl = document.createElement('div');
+    ovl.id = '__loogi_dbg__';
+    ovl.style.cssText = [
+      'position:fixed', 'top:0', 'right:0', 'z-index:99999',
+      'background:#ffeb3b', 'color:#000',
+      'font:11px/1.25 ui-monospace,monospace',
+      'padding:6px 8px', 'max-width:220px',
+      'pointer-events:none', 'white-space:pre',
+      'border-bottom-left-radius:6px', 'box-shadow:0 2px 8px rgba(0,0,0,.3)'
+    ].join(';');
+    var attach = function () { document.body.appendChild(ovl); };
+    if (document.body) attach(); else document.addEventListener('DOMContentLoaded', attach);
+
+    var log = [];
+    function ts() {
+      var d = new Date();
+      return d.toTimeString().slice(3, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+    }
+    function pushEvt(name) {
+      log.push(ts() + ' ' + name);
+      if (log.length > 8) log.shift();
+      render();
+    }
+    function render() {
+      var vv = window.visualViewport;
+      var lines = [
+        'innerH   ' + window.innerHeight,
+        'vvH      ' + (vv ? vv.height.toFixed(1) : 'n/a'),
+        'vvOffT   ' + (vv ? vv.offsetTop.toFixed(1) : 'n/a'),
+        'docCH    ' + document.documentElement.clientHeight,
+        'bodyOH   ' + (document.body ? document.body.offsetHeight : 'n/a'),
+        'scrollY  ' + Math.round(window.scrollY),
+        '────────────',
+      ];
+      ovl.textContent = lines.concat(log).join('\n');
+    }
+    window.__loogiDbg = pushEvt;
+
+    window.addEventListener('resize', function () { pushEvt('win-resize'); });
+    window.addEventListener('scroll', render, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', function () { pushEvt('vv-resize'); });
+      window.visualViewport.addEventListener('scroll', render);
+    }
+    if (document.body) render(); else document.addEventListener('DOMContentLoaded', render);
+  })();
+
   // Search focus shortcut + Auto-Type: jeder Buchstaben/Ziffer/Zeichen-Tastendruck
   // ausserhalb eines anderen Inputs fokussiert die Suchleiste und setzt das
   // Zeichen ein. Funktioniert auf Landingpage UND Ergebnisseite.
@@ -92,13 +148,9 @@
   // toggelt CSS-Transform (siehe loogi.css @media max-width:640px).
   // Schliessen via: Hamburger erneut, Overlay-Tap, ESC, Resize > 640.
   //
-  // KEIN Body-Scroll-Lock — auf iOS Safari triggert jede Aenderung des
-  // Body-Scroll-Container-Status (overflow:hidden ODER position:fixed)
-  // ein Wieder-Einblenden der unteren URL-Bar, die danach als schwarzer
-  // Streifen am Display-Bottom haengen bleibt. Drawer + Overlay decken
-  // visuell sowieso alles ab; ein Body-Scroll dahinter ist unsichtbar.
-  // Touch-Action:none auf dem Overlay verhindert dass Swipes auf der
-  // sichtbaren Overlay-Flaeche zu Body-Scroll fuehren.
+  // KEIN Body-Scroll-Lock — Drawer + Overlay decken visuell alles ab; ein
+  // Body-Scroll dahinter ist unsichtbar. touch-action:none auf dem Overlay
+  // verhindert Swipe-induzierten Body-Scroll.
   var drawerToggle = document.getElementById('drawer_toggle');
   var drawerOverlay = document.getElementById('drawer_overlay');
   function setDrawerOpen(open) {
@@ -106,6 +158,7 @@
     if (open === isOpen) return;
     document.body.classList.toggle('drawer_open', open);
     if (drawerToggle) drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (window.__loogiDbg) window.__loogiDbg(open ? 'drawer-open' : 'drawer-close');
   }
   if (drawerToggle) {
     drawerToggle.addEventListener('click', function (e) {

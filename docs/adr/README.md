@@ -42,3 +42,5 @@ Vorlage fuer neue ADRs: [`0000-template.md`](./0000-template.md).
 | [0012](./0012-bypass-netz-fuer-lokale-clients.md) | Bypass-Netz `loogi-net` fuer lokale Service-Konsumenten | accepted |
 | [0013](./0013-3-spalten-results-layout.md) | 3-Spalten-Layout (Filter / Results / Info) auf der Results-Seite | accepted |
 | [0014](./0014-mobile-layout.md) | Mobile-Layout (Phone-Drawer + Tablet-Collapsed-Default) | accepted |
+| [0015](./0015-wikipedia-aus-general-engines-entfernen.md) | Wikipedia-Engine aus dem general-Tab entfernen | accepted |
+| [0016](./0016-defekte-engines-und-brave-api.md) | Defekte Engines entfernen, Brave auf offizielle API umstellen | accepted |

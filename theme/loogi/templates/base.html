@@ -81,7 +81,7 @@
   <meta name="theme-color" content="#1f2127">
   <title>{% block title %}{% endblock %}{{ instance_name }}</title>
   {% block meta %}{% endblock %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='themes/loogi/css/loogi.css') }}" type="text/css" media="screen">
+  <link rel="stylesheet" href="{{ url_for('static', filename='themes/loogi/css/loogi.css') }}?v=2" type="text/css" media="screen">
   {% if get_setting('server.limiter') or get_setting('server.public_instance') %}
   <link rel="stylesheet" href="{{ url_for('client_token', token=link_token) }}" type="text/css">
   {% endif %}
@@ -96,7 +96,7 @@
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}?v=2">
   <link rel="manifest" href="{{ url_for('static', filename='themes/loogi/manifest.webmanifest') }}">
   <script type="module" src="{{ url_for('static', filename='sxng-core.min.js') }}" client_settings="{{ client_settings }}"></script>
-  <script defer src="{{ url_for('static', filename='themes/loogi/js/loogi.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='themes/loogi/js/loogi.js') }}?v=2"></script>
 </head>
 <body class="{{ endpoint }}_endpoint">
   <main id="main_{{ self._TemplateReference__context.name|replace('loogi/', '')|replace('.html', '') }}" class="{{ body_class }}">

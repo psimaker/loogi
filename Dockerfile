@@ -13,6 +13,19 @@ COPY --chown=searxng:searxng theme/loogi/static/    /usr/local/searxng/searx/sta
 COPY --chown=searxng:searxng searxng/settings.yml   /etc/searxng/settings.yml
 COPY --chown=searxng:searxng searxng/limiter.toml   /etc/searxng/limiter.toml
 
+# Brave Search API-Key zur Build-Zeit in die settings.yml patchen.
+# BRAVE_API_KEY kommt aus der lokalen .env via compose.yml -> build.args
+# (siehe ADR 0016). Default ist leer; in dem Fall wird die braveapi-Engine
+# beim Init mit "No API key provided" deaktiviert (kein Crash, nur Engine
+# faellt aus dem Ranking). Wer einen Key setzt, bekommt eine arbeitende
+# braveapi-Engine. Repo bleibt secret-frei.
+ARG BRAVE_API_KEY=""
+USER root
+RUN SETTINGS=/etc/searxng/settings.yml && \
+    grep -q "BRAVE_API_KEY_PLACEHOLDER" "$SETTINGS" && \
+    sed -i "s|BRAVE_API_KEY_PLACEHOLDER|${BRAVE_API_KEY}|" "$SETTINGS"
+USER searxng
+
 # Eigene Info-Pages (privacy, terms). Pro Sprache eigenes Unterverzeichnis.
 # Wir wollen NUR diese Pages — siehe RUN-Block unten, der die SearXNG-Defaults
 # (about, search-syntax, donate) und nicht-unterstuetzte Sprachen entfernt.

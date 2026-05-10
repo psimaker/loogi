@@ -24,7 +24,17 @@
 }
 
 * { box-sizing: border-box; }
-html { margin: 0; padding: 0; height: 100%; }
+/* KEIN html { height: 100% } — iOS Safari evaluiert das gegen die initial
+   stable viewport height (innerHeight minus Toolbar-Bereich, statisch ab
+   Page-Load) und ignoriert spaetere Toolbar-Show/Hide. Body min-height:100dvh
+   ist dynamisch und kann dann groesser werden als html → Body ragt unten
+   aus html raus, und im Spalt rendert iOS den html-Default-Hintergrund
+   (schwarz im Dark-Mode). Sichtbar als "schwarzer Bottom-Streifen" nach
+   jedem Layout-Recalc (z.B. Drawer-Toggle). Ohne explizite height passt
+   sich html dem body-Inhalt an — kein Mismatch.
+   Background auf html als Defense-in-depth: falls je doch ein Spalt
+   entsteht, hat er unsere bg-Farbe statt browser-default schwarz. */
+html { margin: 0; padding: 0; background: var(--bg); }
 body {
   margin: 0;
   padding: 0;
@@ -41,9 +51,9 @@ body {
   min-height: 100vh;     /* Fallback fuer aeltere Browser */
   min-height: 100dvh;    /* iOS Safari: dynamic viewport — passt sich an
                             URL-Bar-Show/Hide an. */
-  /* WICHTIG: kein height:100% und kein overflow auf body — sonst wird
-     body zum eigenen Scroll-Container und iOS Safari klappt die URL-Bar
-     beim Scrollen NICHT ein. Das Window selbst muss der Scroll-Root sein. */
+  /* Kein height:100% und kein overflow auf body — body waere sonst eigener
+     Scroll-Container und iOS Safari klappt die URL-Bar nicht ein. Window
+     muss Scroll-Root sein. */
 }
 ::selection { background: var(--accent-soft); color: var(--fg); }
 .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
@@ -967,11 +977,11 @@ main.page_with_header ul.tabs a.active {
   body.sidebar_collapsed #filters_sidebar > :not(.sidebar_header) { display: revert; }
   body.sidebar_collapsed .sidebar_header .filter_label { display: revert; }
 
-  /* Drawer offen: einfahren. Body-Scroll-Lock kommt aus JS via
-     position:fixed + top:-scrollY (siehe loogi.js setDrawerOpen) — NICHT
-     via CSS overflow:hidden, weil das auf iOS Safari einen Scroll-Container-
-     Wechsel triggert und nach dem Schliessen einen visuellen Restbalken
-     am Bottom hinterlassen kann. */
+  /* Drawer offen: einfahren. KEIN Body-Scroll-Lock (weder CSS overflow noch
+     JS position:fixed) — beide aendern den Body-Scroll-Container-Status,
+     was iOS Safari als Trigger fuer URL-Bar-Reveal auslegt. Drawer + Overlay
+     decken alles visuell ab, Body-Scroll dahinter ist unsichtbar. Siehe
+     setDrawerOpen() in loogi.js fuer den iOS-Bottom-Toolbar-Nudge nach Close. */
   body.drawer_open #filters_sidebar,
   body.drawer_open.sidebar_collapsed #filters_sidebar { transform: translateX(0); }
 

@@ -6,14 +6,24 @@ use_default_settings:
   engines:
     keep_only:
       # general
-      - google
+      # google bewusst NICHT — liefert dauerhaft HTTP 403 fuer Server-IPs,
+      # siehe ADR 0016.
+      - braveapi
+      # brave (HTML-scrape) bleibt formell in der Liste, ist aber via
+      # engines-Override unten auf disabled: true gesetzt (siehe ADR 0016).
+      # Grund: brave.images / brave.videos / brave.news referenzieren
+      # `network: brave` — ohne brave-Engine in der Map crasht der
+      # Network-Init mit KeyError. Engine wird also als reiner
+      # Network-Donor mitgeladen, fuer Default-Suchen aber nicht gefragt.
       - brave
       - duckduckgo
       - mojeek
       - mwmbl
       - startpage
       - qwant
-      - wikipedia
+      # wikipedia bewusst NICHT in general — siehe ADR 0015. Wikipedia
+      # bleibt via wiki-Tab (wiktionary, wikibooks, ...) und ueber
+      # die Listen-Treffer der grossen Engines erreichbar.
 
       # images
       - google images
@@ -71,7 +81,9 @@ use_default_settings:
       - annas archive
 
       # wiki / reference
-      - wikidata
+      # wikidata bewusst NICHT — query.wikidata.org/sparql liefert beim
+      # Engine-Init dauerhaft HTTP 403 fuer unsere Server-IP, Engine wird
+      # nicht registriert. Siehe ADR 0016.
       - wiktionary
       - wikibooks
       - wikiquote
@@ -163,3 +175,34 @@ enabled_plugins:
   - "Unit converter plugin"
   - "Open Access DOI rewrite"
   - "Hostnames plugin"
+
+# Engine-Overrides (Deltas auf den Upstream-Default-Block).
+# WICHTIG: Bei "use_default_settings: true" laeuft "engines" nicht durch
+# den Deep-Merge — siehe ADR 0009. Wir muessen die Engine hier mit allen
+# benoetigten Feldern komplett wiederholen, damit unser Override greift.
+engines:
+  # braveapi: offizielle Brave-Search-API (kostenpflichtig, Subscription-Token).
+  # Ersetzt das HTML-Scrape (engine: brave), das auf Server-IPs zuverlaessig
+  # mit HTTP 429 blockiert wird. Siehe ADR 0016.
+  #
+  # Den API-Key NICHT hier hardcoden — er wird zur Build-Zeit aus der lokalen
+  # .env (BRAVE_API_KEY=...) in das Image gepatched. Siehe Dockerfile +
+  # compose.yml. Repo bleibt damit secret-frei.
+  - name: braveapi
+    engine: braveapi
+    api_key: "BRAVE_API_KEY_PLACEHOLDER"
+    shortcut: br
+    inactive: false
+    categories: [general, web]
+    paging: true
+    safesearch: true
+    time_range_support: true
+    results_per_page: 20
+
+  # brave (HTML-Scrape) wird ueber den Default-Block geladen, weil
+  # brave.images/videos/news ihn als network-Donor brauchen. Fuer
+  # Default-Suchen aber NICHT verwenden — er liefert nur 429.
+  - name: brave
+    engine: brave
+    shortcut: brh
+    disabled: true
