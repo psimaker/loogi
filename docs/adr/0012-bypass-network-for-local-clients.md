@@ -1,6 +1,6 @@
 # 0012 — Bypass network `loogi-net` for local service consumers
 
-* Status: accepted
+* Status: superseded by [0029](./0029-vps-behind-caddy-edge-proxy.md) (no `loogi-net` on the VPS)
 * Date: 2026-02-19
 
 ## Context

@@ -1,6 +1,6 @@
 # 0008 — No exposed ports, reverse proxy via NPM
 
-* Status: accepted
+* Status: accepted — ingress is Caddy instead of NPM since 2026-06-21, the "no ports:" principle still holds, see [0029](./0029-vps-behind-caddy-edge-proxy.md)
 * Date: 2025-11-24
 
 ## Context
