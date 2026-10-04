@@ -1,0 +1,22 @@
+{#- Port of simple/manifest.json (as of 2026.10.4) for the /manifest.json
+    route — was missing until 2026-10-04 (render() has no theme fallback ->
+    HTTP 500 on every request, e.g. from browsers/crawlers).
+    Values 1:1 as in static/manifest.webmanifest (which base.html links);
+    the route's theme_color/background_color (simple PWA colors) are
+    deliberately ignored. -#}
+{
+  "name": "{{ instance_name }}",
+  "short_name": "{{ instance_name }}",
+  "icons": [
+    {
+      "src": "{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "{{ url_for('index') }}",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#222428",
+  "background_color": "#222428"
+}

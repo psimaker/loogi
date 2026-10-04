@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+{#- Port of simple/opensearch.xml (as of 2026.10.4). Was missing until
+    2026-10-04: base.html links /opensearch.xml (rel="search"), and render()
+    strictly resolves <theme>/opensearch.xml (no fallback) -> every request
+    was an HTTP 500. Changes: LOOGI branding (texts, icon, example query).
+    Absolute icon URL via url_for('index', _external=True): custom_url_for
+    ignores _external for 'static' and only returns /static/... (relative,
+    in the simple original as well), but OpenSearch expects an absolute URL. -#}
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+  <ShortName>{{ instance_name }}</ShortName>
+  <LongName>{{ instance_name }} — privacy-respecting search</LongName>
+  <Description>{{ instance_name }} — privacy-respecting search</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image type="image/png">{{ url_for('index', _external=True) }}static/themes/loogi/img/loogi-mark.png</Image>
+  {% if opensearch_method == 'GET' %}
+  <Url rel="results" type="text/html" method="{{ opensearch_method }}" template="{{ url_for('search', _external=True) }}?q={searchTerms}"/>
+  {% else %}
+  <Url rel="results" type="text/html" method="{{ opensearch_method }}" template="{{ url_for('search', _external=True) }}">
+    <Param name="q" value="{searchTerms}" />
+  </Url>
+  {% endif %}
+  {% if autocomplete %}
+    <Url rel="suggestions" type="application/x-suggestions+json" method="GET" template="{{ url_for('autocompleter', _external=True) }}?q={searchTerms}"/>
+  {% endif %}
+  <Url rel="self" type="application/opensearchdescription+xml" template="{{ url_for('opensearch', _external=True) }}" />
+  <Query role="example" searchTerms="{{ instance_name }}" />
+  <moz:SearchForm>{{ url_for('search', _external=True) }}</moz:SearchForm>
+</OpenSearchDescription>

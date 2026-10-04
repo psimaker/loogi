@@ -1,9 +1,14 @@
 /* LOOGI theme — hardcoded dark UI, OKLCH palette ported from the design prototype.
-   Fonts via fonts.bunny.net (GDPR-compliant Google Fonts mirror, see ADR 0010). */
-
-@import url('https://fonts.bunny.net/css?family=inter-tight:300,400,500,600,700|jetbrains-mono:400,500&display=swap');
+   Fonts via fonts.bunny.net (GDPR-compliant Google Fonts mirror, see ADR 0010).
+   The font CSS is loaded in base.html as <link> + preconnect — deliberately NO
+   @import here: @import would only start the font fetch after this file has
+   downloaded (request chain, later first paint). */
 
 :root {
+  /* Dark-only UI: render native form controls (checkboxes, select popups),
+     scrollbars and canvas defaults dark — otherwise they show up as white
+     foreign bodies, e.g. on /preferences. */
+  color-scheme: dark;
   --bg: oklch(0.155 0.005 240);
   --bg-2: oklch(0.185 0.006 240);
   --panel: oklch(0.205 0.007 240);
@@ -67,7 +72,7 @@ a:hover { text-decoration: underline; }
    Chrome / Firefox use clip and let the window scroll). */
 html { overflow-x: hidden; overflow-x: clip; }
 
-/* Icons (SVGs aus icons.html, currentColor) */
+/* Icons (SVGs from icons.html, currentColor) */
 .sxng-icon-set, .sxng-icon-set-big, .sxng-icon-set-small {
   vertical-align: middle;
   fill: none;
@@ -563,6 +568,10 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
 }
 .result h3 a { color: var(--fg); text-decoration: none; overflow-wrap: anywhere; }
 .result h3 a:hover { color: var(--fg); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
+/* Tint visited results subtly — uses the (previously unused) --visited
+   token from the design prototype palette. Placed after the :hover rule so
+   the visited state stays recognizable while hovering. */
+.result h3 a:visited { color: var(--visited); }
 .result .content {
   margin: 0;
   color: var(--fg-2);
@@ -582,6 +591,50 @@ body.sidebar_collapsed .sidebar_collapse_btn svg { transform: rotate(0deg) !impo
 .result .engines,
 .result .break,
 .result .thumbnail { display: none; }
+
+/* Paper/video extra elements (.attributes meta rows, .altlink link chips,
+   .comments) — as an unstyled simple port they were the reason the papers
+   tab "didn't fit". */
+.result .attributes {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12.5px;
+  color: var(--fg-2);
+}
+.result .attributes > div { display: flex; gap: 6px; min-width: 0; }
+.result .attributes > div > span:first-child { color: var(--fg-4); flex-shrink: 0; }
+.result .attributes > div > span + span { overflow-wrap: anywhere; min-width: 0; }
+.result .comments {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--fg-4);
+  font-style: italic;
+}
+.result .altlink {
+  margin: 4px 0 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.result .altlink a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px;
+  font-size: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  color: var(--fg-2);
+  cursor: pointer;
+}
+.result .altlink a:hover {
+  color: var(--fg);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  text-decoration: none;
+}
 
 /* Image results grid */
 #urls.only_template_images,
@@ -690,6 +743,15 @@ footer a:hover { color: var(--fg); text-decoration: none; }
 }
 .dialog-error .close { float: right; color: var(--fg-3); }
 
+/* Hide the hotkeys help. When "h" is pressed (start/results page), the simple
+   bundle (keyboard.ts) builds the dialog #vim-hotkeys-help ("How to navigate
+   SearXNG with hotkeys") and appends it to <body>. loogi doesn't load the
+   simple modal styles (.dialog-modal/.invisible) → the dialog showed up
+   unstyled as plain text and couldn't be toggled away. Not part of the LOOGI
+   design, so switched off entirely. The hotkeys themselves (arrow navigation
+   through the results) stay. */
+#vim-hotkeys-help { display: none !important; }
+
 /* Back-to-top */
 #backToTop {
   position: fixed;
@@ -714,11 +776,83 @@ footer a:hover { color: var(--fg); text-decoration: none; }
 /* Hide nojs widgets */
 .show_if_nojs { display: none; }
 
-/* Preferences (minimal style — functional) */
+/* Preferences (minimal style — functional).
+   Form controls styled dark: native white selects/inputs + default
+   fieldset borders looked out of place in the dark theme. The layout stays
+   the plain long form (no port of the simple tab mechanics). */
 body.preferences_endpoint #main_preferences {
   max-width: 880px;
   margin: 0 auto;
   padding: 0 24px 32px;
+}
+body.preferences_endpoint fieldset {
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 0 0 12px;
+}
+body.preferences_endpoint legend {
+  color: var(--fg-3);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 0 6px;
+}
+body.preferences_endpoint .description {
+  color: var(--fg-3);
+  font-size: 13px;
+  margin-top: 6px;
+}
+body.preferences_endpoint select,
+body.preferences_endpoint input[type="text"],
+body.preferences_endpoint input[type="number"] {
+  background: var(--bg-2);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13.5px;
+}
+body.preferences_endpoint select:focus-visible,
+body.preferences_endpoint input:focus-visible,
+body.preferences_endpoint button:focus-visible {
+  outline: 2px solid var(--accent-line);
+  outline-offset: 2px;
+}
+body.preferences_endpoint input[type="checkbox"],
+body.preferences_endpoint input[type="radio"] {
+  accent-color: oklch(0.80 0.105 195);
+}
+body.preferences_endpoint table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+body.preferences_endpoint th,
+body.preferences_endpoint td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--fg-2);
+}
+body.preferences_endpoint th { color: var(--fg-3); font-weight: 500; }
+body.preferences_endpoint button[type="submit"],
+body.preferences_endpoint input[type="submit"] {
+  background: var(--accent-soft);
+  color: var(--fg);
+  border: 1px solid var(--accent-line);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+body.preferences_endpoint button[type="submit"]:hover,
+body.preferences_endpoint input[type="submit"]:hover { background: var(--accent-line); }
+/* Save / reset / back in one row instead of stacked */
+body.preferences_endpoint .preferences_back {
+  display: inline-block;
+  margin: 16px 0 0 8px;
 }
 .preferences_back { margin: 16px 0; }
 .preferences_back a {
@@ -733,7 +867,7 @@ body.preferences_endpoint #main_preferences {
 }
 .preferences_back a:hover { color: var(--fg); background: var(--panel); text-decoration: none; }
 
-/* About / Info pages (Markdown-rendered: privacy, terms, about, search-syntax) */
+/* About / info pages (Markdown-rendered: privacy, terms, about, search-syntax) */
 main.page_with_header #page_logo {
   display: block;
   padding: 22px 0 12px;
@@ -808,19 +942,24 @@ main.page_with_header ul.tabs a.active {
 }
 .info-page strong { color: var(--fg); font-weight: 600; }
 
-/* Result item hover actions (design prototype ResultItem) — 2nd grid column */
+/* Result item hover actions (design prototype ResultItem) — 2nd grid column.
+   visibility instead of just opacity: opacity:0 would leave the buttons in
+   the tab order (invisible focus stops); visibility:hidden takes them out.
+   :focus-within makes the actions reachable for keyboard users as well
+   (focus on the result title → actions visible → next tab reaches them). */
 .result_actions {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
   opacity: 0;
-  transition: opacity .15s ease;
-  pointer-events: none;
+  visibility: hidden;
+  transition: opacity .15s ease, visibility .15s ease;
 }
-.result:hover .result_actions {
+.result:hover .result_actions,
+.result:focus-within .result_actions {
   opacity: 1;
-  pointer-events: auto;
+  visibility: visible;
 }
 .result_action {
   width: 32px;
@@ -841,6 +980,7 @@ main.page_with_header ul.tabs a.active {
   color: var(--fg);
   text-decoration: none;
 }
+.result_action:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 2px; }
 
 /* ────────── Pagination polish (design prototype Pagination / PageBtn) ────────── */
 #pagination {

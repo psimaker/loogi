@@ -1,7 +1,9 @@
-# LOOGI — Docker Compose
-# Reverse proxy and TLS handled externally by NPM via proxy-net (see ADR 0008).
-# No ports: published — NPM reaches the container via the "loogi" hostname on 8080.
-
+# LOOGI — Docker Compose (production: VPS behind a shared Caddy edge proxy, ADR 0029)
+# TLS/domain (loogi.ch) is handled by the edge proxy; the container joins its
+# Docker network "edge" and is reachable by name: loogi:8080. No ports: —
+# the edge proxy is the only way in (ADR 0008/0029).
+# The image is built on the server (`docker compose build`; BRAVE_API_KEY
+# patched in at build time, base version pinned in the Dockerfile, ADR 0023).
 name: loogi
 
 services:
@@ -9,18 +11,17 @@ services:
     build:
       context: .
       args:
-        # Brave Search API key — patched into /etc/searxng/settings.yml at
-        # build time. Sourced from local .env (gitignored). Empty default =
-        # engine disables itself on init (no crash). See ADR 0016.
+        # Brave Search API key — patched into /etc/loogi/settings.yml at
+        # build time. Sourced from the local .env (gitignored). Empty
+        # default = the engine disables itself on init (no crash). ADR 0016.
         BRAVE_API_KEY: ${BRAVE_API_KEY:-}
     image: loogi:latest
     container_name: loogi
     hostname: loogi
     restart: unless-stopped
     networks:
-      - proxy-net          # incoming web traffic via NPM (TLS terminated there)
-      - loogi-net          # local service consumers (crawl4ai etc.) — IP-limit bypass via pass_ip
-      - loogi-internal     # Valkey backend
+      - caddy
+      - loogi-internal
     environment:
       - SEARXNG_BASE_URL=https://loogi.ch/
       - SEARXNG_SECRET=${SEARXNG_SECRET}
@@ -32,7 +33,11 @@ services:
       - SETGID
       - SETUID
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/healthz"]
+      # Send X-Forwarded-For: without it, bot detection logs "X-Forwarded-For
+      # nor X-Real-IP header is set!" on the first health check after every
+      # start (only once per process) — and thereby swallows exactly the
+      # message that would reveal a real proxy misconfiguration.
+      test: ["CMD", "wget", "-q", "--spider", "--header=X-Forwarded-For: 127.0.0.1", "http://127.0.0.1:8080/healthz"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -70,18 +75,11 @@ services:
         max-file: "3"
 
 networks:
-  # NPM ingress network, provided by the reverse proxy.
-  proxy-net:
+  # Docker network of the shared Caddy edge proxy (separate stack), joined
+  # as external (ADR 0029). Create it once with: docker network create edge
+  caddy:
     external: true
-
-  # Bypass network for local service consumers (e.g. crawl4ai).
-  # Create before the first "compose up":
-  #   docker network create --subnet=172.30.0.0/24 loogi-net
-  # Other compose stacks join via:
-  #   networks: { loogi-net: { external: true } }
-  loogi-net:
-    external: true
-
+    name: edge
   # Backend-only network for valkey. internal=true ⇒ no internet access
   # for containers in here (valkey doesn't need any).
   loogi-internal:

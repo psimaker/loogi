@@ -20,8 +20,10 @@
       {%- endfor -%}
     </select>{{- '' -}}
   </div>{{- '' -}}
+  {#- Only the first (Babel-translated) sentence — the former second sentence
+      was a custom string without a catalog entry and stayed English in every
+      UI language (mixed languages on the settings page). -#}
   <div class="description" id="desc_language">
-    {{- _('What language do you prefer for search?') }} {{- ' ' -}}
-    {{- _('Choose Auto-detect to let LOOGI detect the language of your query.') -}}
+    {{- _('What language do you prefer for search?') -}}
   </div>{{- '' -}}
 </fieldset>{{- '' -}}

@@ -16,6 +16,7 @@
     'opt_safe_strict': 'Strict', 'opt_safe_moderate': 'Moderate', 'opt_safe_off': 'Off',
     'open_new_tab': 'Open in new tab', 'hide_domain': 'Hide domain',
     'menu': 'Menu', 'close_menu': 'Close menu',
+    'preferences': 'Settings',
   },
   'de': {
     'placeholder': 'Im Web suchen…',
@@ -28,6 +29,7 @@
     'opt_safe_strict': 'Streng', 'opt_safe_moderate': 'Mittel', 'opt_safe_off': 'Aus',
     'open_new_tab': 'In neuem Tab öffnen', 'hide_domain': 'Domain ausblenden',
     'menu': 'Menü', 'close_menu': 'Menü schließen',
+    'preferences': 'Einstellungen',
   },
   'fr': {
     'placeholder': 'Rechercher sur le web…',
@@ -40,6 +42,7 @@
     'opt_safe_strict': 'Stricte', 'opt_safe_moderate': 'Modérée', 'opt_safe_off': 'Désactivée',
     'open_new_tab': 'Ouvrir dans un nouvel onglet', 'hide_domain': 'Masquer le domaine',
     'menu': 'Menu', 'close_menu': 'Fermer le menu',
+    'preferences': 'Paramètres',
   },
   'es': {
     'placeholder': 'Buscar en la web…',
@@ -52,6 +55,7 @@
     'opt_safe_strict': 'Estricta', 'opt_safe_moderate': 'Moderada', 'opt_safe_off': 'Desactivada',
     'open_new_tab': 'Abrir en nueva pestaña', 'hide_domain': 'Ocultar dominio',
     'menu': 'Menú', 'close_menu': 'Cerrar menú',
+    'preferences': 'Ajustes',
   },
   'it': {
     'placeholder': 'Cerca nel web…',
@@ -64,6 +68,7 @@
     'opt_safe_strict': 'Severa', 'opt_safe_moderate': 'Moderata', 'opt_safe_off': 'Disattivata',
     'open_new_tab': 'Apri in nuova scheda', 'hide_domain': 'Nascondi dominio',
     'menu': 'Menu', 'close_menu': 'Chiudi menu',
+    'preferences': 'Impostazioni',
   },
 }[lang2] -%}
 <!DOCTYPE html>
@@ -81,7 +86,12 @@
   <meta name="theme-color" content="#1f2127">
   <title>{% block title %}{% endblock %}{{ instance_name }}</title>
   {% block meta %}{% endblock %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='themes/loogi/css/loogi.css') }}?v=2" type="text/css" media="screen">
+  {#- Fonts as a direct <link> instead of @import in loogi.css: @import only
+      starts the font CSS fetch AFTER loogi.css has downloaded (request
+      chain → later first paint). preconnect saves the TLS handshake round trip. -#}
+  <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+  <link rel="stylesheet" href="https://fonts.bunny.net/css?family=inter-tight:300,400,500,600,700|jetbrains-mono:400,500&display=swap" type="text/css" media="screen">
+  <link rel="stylesheet" href="{{ url_for('static', filename='themes/loogi/css/loogi.css') }}?v=5" type="text/css" media="screen">
   {% if get_setting('server.limiter') or get_setting('server.public_instance') %}
   <link rel="stylesheet" href="{{ url_for('client_token', token=link_token) }}" type="text/css">
   {% endif %}
@@ -96,8 +106,13 @@
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}?v=2">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='themes/loogi/img/loogi-mark.png') }}?v=2">
   <link rel="manifest" href="{{ url_for('static', filename='themes/loogi/manifest.webmanifest') }}">
-  <script type="module" src="{{ url_for('static', filename='sxng-core.min.js') }}" client_settings="{{ client_settings }}"></script>
-  <script defer src="{{ url_for('static', filename='themes/loogi/js/loogi.js') }}?v=2"></script>
+  {#- sxng-core (autocomplete dropdown + hotkeys) loaded explicitly from the
+      simple bundle: the bundle only exists under themes/simple/. Without the
+      prefix custom_url_for resolves to /static/sxng-core.min.js → 404 and the
+      script never loads (that was the case until 2026-06-11). Chunk imports
+      load relative to this URL. -#}
+  <script type="module" src="{{ url_for('static', filename='themes/simple/sxng-core.min.js') }}" client_settings="{{ client_settings }}"></script>
+  <script defer src="{{ url_for('static', filename='themes/loogi/js/loogi.js') }}?v=3"></script>
 </head>
 <body class="{{ endpoint }}_endpoint">
   <main id="main_{{ self._TemplateReference__context.name|replace('loogi/', '')|replace('.html', '') }}" class="{{ body_class }}">
@@ -116,6 +131,7 @@
 
   <footer>
     <span class="spacer"></span>
+    <a href="{{ url_for('preferences') }}">{{ LOOGI_T.preferences }}</a>
     <a href="{{ url_for('info', pagename='privacy', locale=lang2) }}">{{ LOOGI_T.privacy }}</a>
     <a href="{{ url_for('info', pagename='terms', locale=lang2) }}">{{ LOOGI_T.terms }}</a>
     <a href="https://github.com/psimaker" target="_blank" rel="noopener noreferrer">{{ LOOGI_T.about }}</a>

@@ -1,5 +1,5 @@
 # LOOGI — SearXNG settings.
-# Copied to /etc/searxng/settings.yml during container build.
+# Copied to /etc/loogi/settings.yml during container build (ADR 0018).
 # With `use_default_settings: true` only deltas from the upstream default
 # are merged (deep merge), see ADR 0009.
 use_default_settings:
@@ -17,7 +17,23 @@ use_default_settings:
       # network donor, but never queried for default searches.
       - brave
       - duckduckgo
+      # yahoo (Bing index): third web voter next to braveapi + duckduckgo,
+      # verified live from the server IP (2026-10-04, good results for
+      # Swiss as well as international queries). Upstream default is
+      # disabled -> override in the engines: block. See ADR 0027.
+      - yahoo
+      # mojeek + qwant ship disabled in the upstream default (qwant
+      # disabled: true, mojeek since 2026.9 even inactive: true = not loaded
+      # at all) — keep_only only filters the engine list, it doesn't change
+      # engine attributes. ADR 0022 had enabled both via override; since
+      # 2026-10-04 they are back on the upstream default because the server
+      # IP is blocked by both (ADR 0025). The same applies to startpage
+      # (+ news/images): upstream inactive: true since 2026.9.
+      # The entries stay here so that re-enabling later only needs an
+      # override in the engines: block.
       - mojeek
+      # mwmbl deliberately stays on the upstream default disabled: true —
+      # mini index (beta), worthless as a consensus voter. See ADR 0022.
       - mwmbl
       - startpage
       - qwant
@@ -26,7 +42,12 @@ use_default_settings:
       # and through the list hits of the major engines.
 
       # images
-      - google images
+      # google images deliberately NOT anymore — upstream rebuilt the engine
+      # in 2026.9 on the WML/Nokia path, which only gets HTTP 403 from the
+      # server IP (the old Google Go API path worked until 2026.6.17);
+      # upstream sets it to disabled itself. Replacement: bing images
+      # (active upstream, verified live from the server IP). See ADR 0025.
+      - bing images
       - brave.images
       - duckduckgo images
       - qwant images
@@ -112,9 +133,9 @@ search:
   ban_time_on_fail: 5
   max_ban_time_on_fail: 120
   # Favicons for search results — DuckDuckGo resolver (privacy-respecting,
-  # consistent with autocomplete). Cache lives in Valkey, repeat domains
-  # hit the resolver only once. Other available resolvers:
-  # allesedv | google | yandex.
+  # consistent with autocomplete). The cache is an SQLite file on the data
+  # volume (see favicons.toml), repeat domains hit the resolver only once.
+  # Other available resolvers: allesedv | google | kagi | yandex.
   favicon_resolver: "duckduckgo"
   formats:
     - html
@@ -154,7 +175,8 @@ outgoing:
   request_timeout: 3.0
   max_request_timeout: 10.0
   pool_connections: 100
-  pool_maxsize: 20
+  # pool_maxsize went away with the upstream migration httpx -> curl_cffi
+  # (2026.9) and would only be ignored silently.
   enable_http2: true
 
 categories_as_tabs:
@@ -168,18 +190,67 @@ categories_as_tabs:
   science:
   files:
 
-enabled_plugins:
-  - "Hash plugin"
-  - "Self Information"
-  - "Tracker URL remover"
-  - "Unit converter plugin"
-  - "Open Access DOI rewrite"
-  - "Hostnames plugin"
+# Plugins as a plugins: dict (fully qualified class paths). The former
+# enabled_plugins: list key is NO LONGER read by SearXNG (dead config,
+# discovered during the base update on 2026-06-11) — and plugins: REPLACES
+# the upstream default completely (no deep merge, settings_loader.py copies
+# the dict 1:1). So ALL desired plugins must be listed here explicitly;
+# plugins that aren't listed are not loaded at all. See ADR 0017.
+#
+# Set = upstream default state (that's how the instance actually ran since
+# the format migration) + oa_doi_rewrite enabled (the original intent of the
+# old enabled_plugins list, which had been lost through the dead config).
+plugins:
+  searx.plugins.calculator.SXNGPlugin:
+    active: true
+  searx.plugins.hash_plugin.SXNGPlugin:
+    active: true
+  searx.plugins.self_info.SXNGPlugin:
+    active: true
+  searx.plugins.unit_converter.SXNGPlugin:
+    active: true
+  searx.plugins.ahmia_filter.SXNGPlugin:
+    active: true
+  searx.plugins.hostnames.SXNGPlugin:
+    active: true
+  searx.plugins.time_zone.SXNGPlugin:
+    active: true
+  searx.plugins.tracker_url_remover.SXNGPlugin:
+    active: true
+  # Deliberate delta to the upstream default: rewrite DOI links to free
+  # full texts (was intended in the old enabled_plugins list).
+  searx.plugins.oa_doi_rewrite.SXNGPlugin:
+    active: true
+  # LOOGI's own plugin (copied into the image via the Dockerfile): removes
+  # leftover markup (<strong>, &quot;, ...) from engine snippets — startpage
+  # and braveapi would otherwise show tags as visible plain text. See ADR 0019.
+  searx.plugins.loogi_snippet_cleaner.SXNGPlugin:
+    active: true
+  # LOOGI's own plugin: clears thumbnail/img_src on default.html results.
+  # Otherwise the grouping pass in get_ordered_results() splits every
+  # general/news page into "without thumbnail" before "with thumbnail" and
+  # breaks the score order (braveapi delivers thumbnails, startpage/duckduckgo
+  # don't; the theme doesn't render them in default.html at all). See ADR 0021.
+  searx.plugins.loogi_thumbnail_cleaner.SXNGPlugin:
+    active: true
+  # LOOGI's own plugin: masks search queries (URL query strings) and IP
+  # addresses in the server logs from level INFO up — the privacy policy
+  # promises to store neither, but SearXNG logs e.g.
+  # "HTTP Request failed: GET <URL with ?q=...>" at WARNING. See ADR 0026.
+  searx.plugins.loogi_log_redactor.SXNGPlugin:
+    active: true
+  # Off by default, but loaded (can be switched on at /preferences; the
+  # description is patched to LOOGI in the Dockerfile):
+  searx.plugins.tor_check.SXNGPlugin:
+    active: false
+  # infinite_scroll deliberately NOT loaded — the feature is disabled in ui:.
 
 # Engine overrides (deltas on top of the upstream default block).
-# IMPORTANT: with "use_default_settings: true" the "engines" key does NOT
-# go through the deep merge — see ADR 0009. We have to repeat the engine
-# here with all required fields for our override to take effect.
+# Merge semantics (verified 2026-06-11 in settings_loader.py,
+# update_settings): entries are merged by name via update_dict into the
+# upstream default — partial overrides (only the changed fields) are
+# enough, all other fields stay upstream. Only engines that do NOT exist
+# in the default (e.g. braveapi) need all fields.
 engines:
   # braveapi: official Brave Search API (paid, subscription token).
   # Replaces the HTML scrape (engine: brave), which is reliably blocked
@@ -196,6 +267,13 @@ engines:
     categories: [general, web]
     paging: true
     safesearch: true
+    # Since 2026.9 (#6799) upstream maps safesearch 0/1/2 -> off/moderate/
+    # strict. Before that, braveapi sent NO parameter at all for 0 -> Brave
+    # filtered with its default "moderate". So that the update doesn't
+    # silently bring unfiltered results to default users (safe_search: 0),
+    # 0 stays -> moderate; 1/2 follow the upstream fix (previously both
+    # strict). Operator decision 2026-10-04, see ADR 0025.
+    safesearch_map: {0: moderate, 1: moderate, 2: strict}
     time_range_support: true
     results_per_page: 20
 
@@ -205,4 +283,49 @@ engines:
   - name: brave
     engine: brave
     shortcut: brh
+    disabled: true
+
+  # qwant + mojeek + startpage: NO override (anymore) — the upstream
+  # default applies (qwant disabled: true; mojeek and startpage incl.
+  # news/images inactive: true since 2026.9 = not loaded at all).
+  # History: ADR 0022 had enabled qwant + mojeek on 2026-06-11 via
+  # disabled: false (tested from the homelab IP back then) — with the rule
+  # "if one starts blocking: back to disabled". That has happened: from the
+  # VPS IP (since 2026-06-21) qwant (DataDome, HTTP 403), mojeek (HTTP 403,
+  # even with a solved Altcha captcha) and startpage (CAPTCHA; on top of that
+  # an Anubis proof-of-work with difficulty 5 = avg. 3.6 s CPU per solve,
+  # which the upstream solver rejects above 4) block every request — old and
+  # new code alike, verified live on 2026-10-04. See ADR 0025. Re-enable
+  # only after a fresh bang test from the server IP (e.g. "!qw test" via
+  # the JSON API).
+
+  # yahoo as the third web voter (upstream default disabled). ADR 0027.
+  - name: yahoo
+    disabled: false
+
+  # Dead engines: return 0 results from the server IP — in the old
+  # (2026.6.17) AND the new (2026.10.4) code, bang survey 2026-10-04.
+  # disabled instead of permanent errors (pointless requests, log noise,
+  # suspend cycles). They stay loaded (bang/preferences possible); brave.*
+  # still need the brave network donor above. Re-enable: remove the override
+  # once a bang test from the server IP returns results again. ADR 0027.
+  - name: brave.images    # HTTP 429 (Brave HTML, cf. ADR 0016)
+    disabled: true
+
+  - name: brave.news      # HTTP 429
+    disabled: true
+
+  - name: brave.videos    # HTTP 429
+    disabled: true
+
+  - name: duckduckgo images  # HTTP 403
+    disabled: true
+
+  - name: google news     # CAPTCHA / HTTP 403
+    disabled: true
+
+  - name: vimeo           # HTTP 403 / HTTP error
+    disabled: true
+
+  - name: bandcamp        # 0 results without an error message
     disabled: true

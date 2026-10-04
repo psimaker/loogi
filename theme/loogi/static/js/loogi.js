@@ -7,9 +7,8 @@
 (function () {
   'use strict';
 
-  // Flip no-js → js so CSS hide_if_nojs / show_if_nojs takes effect as
-  // expected (otherwise the autocomplete box stays visible with an empty
-  // border).
+  // Flip no-js → js so CSS hide_if_nojs / show_if_nojs takes effect as expected
+  // (otherwise the autocomplete box stays visible with an empty border).
   document.documentElement.classList.replace('no-js', 'js');
 
   // ─── Debug overlay (gated by ?debug=1) ──────────────────────────
@@ -68,8 +67,8 @@
     if (document.body) render(); else document.addEventListener('DOMContentLoaded', render);
   })();
 
-  // Search focus shortcut + auto-type: any letter / digit / character
-  // keypress outside another input focuses the search bar and inserts the
+  // Search focus shortcut + auto-type: any letter / digit / character keypress
+  // outside another input focuses the search bar and inserts the
   // character. Works on the landing page AND the results page.
   function isEditableTarget(el) {
     if (!el) return false;
@@ -145,14 +144,13 @@
     });
   });
 
-  // Off-canvas drawer for the filter sidebar (phone). Body class
-  // drawer_open toggles a CSS transform (see loogi.css @media
-  // max-width:640px). Close via: hamburger again, overlay tap, ESC,
-  // resize > 640.
+  // Off-canvas drawer for the filter sidebar (phone). Body class drawer_open
+  // toggles a CSS transform (see loogi.css @media max-width:640px).
+  // Close via: hamburger again, overlay tap, ESC, resize > 640.
   //
   // NO body scroll lock — drawer + overlay cover everything visually;
-  // body scroll behind them is invisible. touch-action:none on the
-  // overlay prevents swipe-induced body scroll.
+  // body scroll behind them is invisible. touch-action:none on the overlay
+  // prevents swipe-induced body scroll.
   var drawerToggle = document.getElementById('drawer_toggle');
   var drawerOverlay = document.getElementById('drawer_overlay');
   function setDrawerOpen(open) {
@@ -181,6 +179,21 @@
     if (window.innerWidth > 640 && document.body.classList.contains('drawer_open')) {
       setDrawerOpen(false);
     }
+  });
+
+  // Hide-domain action: hides ALL results of that domain on the page
+  // (the button title promises "Hide domain", not "Hide result").
+  // Session-only, nothing is persisted.
+  document.querySelectorAll('.result_action_hide_domain').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var domain = btn.getAttribute('data-domain');
+      if (!domain) return;
+      document.querySelectorAll('.result_action_hide_domain[data-domain="' + domain + '"]')
+        .forEach(function (b) {
+          var result = b.closest('.result');
+          if (result) result.style.display = 'none';
+        });
+    });
   });
 
   // Sources checkbox toggle (visual only — no SearXNG backing)

@@ -19,6 +19,15 @@
         {%- if count %}<span class="category_count mono">{{ count }}</span>{% endif -%}
       </button>
     {%- endfor -%}
+    {#- REQUIRED field for sxng-core: its submit handler calls preventDefault,
+        fills #selected-categories from the .selected buttons and then
+        submits programmatically (button names are lost on form.submit()).
+        Without the field the handler throws ("DOM element not found") and
+        EVERY submit of the search form on the results page dies — tab clicks
+        AND Enter searches (that was the case until 2026-06-11). Without JS
+        the field is submitted empty — webadapter.parse_category_form
+        filters out empty values. -#}
+    <input name="categories" id="selected-categories" type="hidden">
   </div>
   {#- Result meta span ("≈ X results · Ys · Z sources") was removed entirely
       at user request (desktop and phone). -#}

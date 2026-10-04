@@ -1,5 +1,5 @@
 # LOOGI — limiter / bot detection.
-# Copied to /etc/searxng/limiter.toml during container build.
+# Copied to /etc/loogi/limiter.toml during container build (ADR 0018).
 
 [botdetection]
 
@@ -7,8 +7,9 @@
 ipv4_prefix = 32
 ipv6_prefix = 56
 
-# The reverse proxy runs via NPM on a Docker bridge network (proxy-net).
-# Cover the RFC1918 ranges so X-Forwarded-For from NPM is accepted.
+# The reverse proxy (Caddy edge proxy, ADR 0029; formerly NPM) reaches the
+# container via a Docker bridge network (172.16.0.0/12). Cover the RFC1918
+# ranges so its X-Forwarded-For is accepted.
 # (Security note: anyone sitting in one of these subnets can spoof
 # X-Forwarded-For — which is fine, since this only affects containers on
 # the same Docker host, which already implies root-level trust.)
@@ -28,10 +29,10 @@ link_token = true
 [botdetection.ip_lists]
 block_ip = []
 
-# IPs/subnets that fully bypass bot detection and the rate limiter
-# (see ADR 0012). The loogi-net (compose.yml) has a fixed subnet
-# 172.30.0.0/24 — local service consumers (crawl4ai etc.) join there
-# and are unrestricted.
+# IPs/subnets that fully bypass bot detection and the rate limiter.
+# 172.30.0.0/24 was the loogi-net for local service consumers in the
+# homelab setup (ADR 0012); it doesn't exist on the VPS, so the entry has
+# had no effect since 2026-06-21 (remove on the next rebuild, ADR 0029).
 pass_ip = [
   '172.30.0.0/24',
   '127.0.0.0/8',
