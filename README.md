@@ -1,12 +1,15 @@
 # LOOGI
 
-A privacy-focused web search engine — running in production at [**loogi.ch**](https://loogi.ch). Built on top of [SearXNG](https://github.com/searxng/searxng), with a hardcoded LOOGI theme, a curated engine list, and a few operational refinements.
+> [!NOTE]
+> **Archived (November 2026).** LOOGI has been shut down and loogi.ch no longer serves search. The repository stays up, read-only, as a reference for the theme, the configuration and the 29 architecture decision records.
+
+A privacy-focused web search engine that ran in production at **loogi.ch** until November 2026. Built on top of [SearXNG](https://github.com/searxng/searxng), with a hardcoded LOOGI theme, a curated engine list, and a few operational refinements.
 
 [![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](LICENSE)
 [![Built on SearXNG](https://img.shields.io/badge/built%20on-SearXNG-3050F8?logo=searx&logoColor=white)](https://github.com/searxng/searxng)
 
 <p align="center">
-  <a href="https://loogi.ch"><img src="docs/screenshots/homepage.png" alt="LOOGI homepage" width="820"></a>
+  <img src="docs/screenshots/homepage.png" alt="LOOGI homepage" width="820">
 </p>
 
 ## What this is
@@ -22,7 +25,7 @@ LOOGI is a single-purpose deployment of [SearXNG](https://github.com/searxng/sea
 - legal pages (privacy + terms) in five locales, surfaced via a small Dockerfile patch — see [ADR 0011](docs/adr/0011-legal-pages-via-infopage-patch.md)
 - operational defaults: pinned SearXNG base ([ADR 0023](docs/adr/0023-pin-searxng-base-version.md)), build-time config baking ([ADR 0003](docs/adr/0003-own-docker-image-vs-volume-mounts.md), [ADR 0018](docs/adr/0018-config-out-of-etc-searxng-volume.md)), no public ports behind an edge proxy ([ADR 0008](docs/adr/0008-no-ports-exposed-via-npm.md), [ADR 0029](docs/adr/0029-vps-behind-caddy-edge-proxy.md))
 
-This repo is the source. In production LOOGI runs on a small VPS behind a shared Caddy edge proxy; until June 2026 it was part of my [homelab](https://github.com/psimaker/homelab).
+This repo is the source. In production LOOGI ran on a small VPS behind a shared Caddy edge proxy; until June 2026 it was part of my [homelab](https://github.com/psimaker/homelab).
 
 ## Architecture in one sentence
 
@@ -141,4 +144,4 @@ Privacy and Terms pages are reachable at `/info/<lang>/privacy` and `/info/<lang
 
 ## License
 
-[AGPL-3.0-or-later](LICENSE) — inherited from SearXNG. Any public modification must be released under the same license. The source for the running loogi.ch instance is this repository.
+[AGPL-3.0-or-later](LICENSE) — inherited from SearXNG. Any public modification must be released under the same license. This repository was the source for the loogi.ch instance.
